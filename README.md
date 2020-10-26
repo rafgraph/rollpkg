@@ -77,13 +77,15 @@ Having a `tsconfig.json` is a requirement of `rollpkg` because it uses the TypeS
 
 ### ESLint config
 
-If you want to use ESLint (recommended) you can extend the config provided by `rollpkg`. It includes support for TypeScript, JavaScript, React (including the React Testing Library), Prettier, and Jest (note you do not need to use all/any of these to use the provided ESLint config). The provided ESLint config mostly just extends the recommended defaults for each plugin.
+If you want to use ESLint (recommended) you can extend the config provided by `rollpkg`. It includes support for TypeScript, JavaScript, React, Prettier, and Jest (including the React Testing Library). The provided ESLint config mostly just extends the recommended defaults for each plugin.
 
 There is no need to install ESLint as it is included with `rollpkg`. In `package.json` add:
 
+> Note that the path includes `./node_modules/...`, this is because in order for ESLint to resolve `extends` it requires either a path to the config, or for the config to be published in its [own package named `eslint-config-...`](https://eslint.org/docs/developer-guide/shareable-configs). I may publish this config separately at some point, but for now it will remain a part of `rollpkg` for easy development.
+
 ```json
 "eslintConfig": {
-  "extends": ["rollpkg/configs/eslint"]
+  "extends": ["./node_modules/rollpkg/configs/eslint"]
 }
 ```
 
@@ -103,7 +105,7 @@ If you want to use Jest (recommended) you can use the preset provided by `rollpk
 
 ```json
 "jest": {
-  "preset": "rollpkg/configs/jest" 
+  "preset": "rollpkg/configs/jest"
 }
 ```
 
@@ -118,7 +120,7 @@ If you want to use Jest (recommended) you can use the preset provided by `rollpk
 - How do I use modern JavaScript features that can't be compilied to `es5` (e.g. `map`, `array.includes`, etc)?
 - Why doesn't `rollpkg` create a build with separate entries for `development` and `production`?
 
-<!-- 
+<!--
 ## TODO
 - answer FAQs
 - `files` array in `package.json` with `src` and `dist` for publishing
