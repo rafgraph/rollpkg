@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/rafgraph/rollpkg/issues"
   },
-  "homepage": "https://github.com/rafgraph/rollpkg#readme"
+  "homepage": "https://github.com/rafgraph/rollpkg#readme",
+  "dependencies": {
+    "typescript": "^4.0.3"
+  }
 }
