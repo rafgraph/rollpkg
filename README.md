@@ -92,7 +92,7 @@ There is no need to install ESLint as it is included with `rollpkg`. In `package
 If you want to use Prettier (recommended) you can extend the config provided by `rollpkg`. There is no need to install Prettier as it is included with `rollpkg`. In `package.json` add:
 
 ```json
-"prettier": "rollpkg/configs/prettier"
+"prettier": "rollpkg/configs/prettier.json"
 ```
 
 You may also want to set up a pre-commit hook using `husky` and `lint-staged` so any changes are auto-formatted before being committed. See the [Prettier docs for Git hooks](https://prettier.io/docs/en/install.html#git-hooks).
