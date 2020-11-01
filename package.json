@@ -2,8 +2,12 @@
   "name": "rollpkg",
   "version": "0.0.0",
   "description": "Zero config solution for building packages with Rollup and TypeScript.",
-  "main": "src/index.ts",
+  "bin": {
+    "rollpkg": "dist/cli.js"
+  },
   "scripts": {
+    "build": "rm -rf dist && tsc && chmod +x dist/cli.js",
+    "watch": "rm -rf dist && npm run build && chmod +x dist/cli.js && tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,8 +19,10 @@
   "bugs": {
     "url": "https://github.com/rafgraph/rollpkg/issues"
   },
+  "prettier": "./configs/prettier.json",
   "homepage": "https://github.com/rafgraph/rollpkg#readme",
   "dependencies": {
+    "@rollup/plugin-typescript": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
     "eslint": "^7.12.0",
@@ -26,6 +32,10 @@
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-react-hooks": "^4.2.0",
     "prettier": "^2.1.2",
+    "rollup": "^2.33.0",
     "typescript": "^4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.6"
   }
 }
