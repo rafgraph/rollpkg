@@ -10,13 +10,23 @@ For an example package see `rollpkg-example-package`: [package repo](TODO), and 
 
 ## Setup `rollpkg`
 
-**Install `rollpkg` and `typescript`** (note that the docs use `npm`, but `rollpkg` works just as well with `yarn`):
+#### Prerequisites 
+Initialize with `git` and `npm`. Note that the docs use `npm`, but it works just as well with `yarn`.
+```
+mkdir <package-name>
+cd <package-name>
+git init
+npm init
+```
+
+#### Install `rollpkg` and `typescript`
 
 ```
 npm install --save-dev rollpkg typescript
 ```
 
-**Add `main`, `module`, `types`, and `sideEffects` fields to `package.json`** (and make sure the `name` field is also present). Rollpkg uses a convention over configuration approach so the field values in `package.json` must be exactly as listed below, just fill in your `<package-name>` and you’re good to go.
+#### Add `main`, `module`, `types`, and `sideEffects` fields to `package.json`
+Rollpkg uses a convention over configuration approach so the field values in `package.json` must be exactly as listed below, just fill in your `<package-name>` and you’re good to go.
 
 ```
 {
@@ -31,7 +41,7 @@ npm install --save-dev rollpkg typescript
 
 > Note about `sideEffects`: most packages should set `"sideEffects": false` to fully enable tree shaking. A side effect is code that effects the global space when the script is run even if the `import` is never used, for example a polyfill that automatically polyfills a feature when the script is run would set `sideEffects: true`. For more info see the [Webpack docs](https://webpack.js.org/guides/tree-shaking/#mark-the-file-as-side-effect-free) (note that `rollpkg` doesn't support an array of filenames containing side effects like Webpack).
 
-**Add `build`, `watch` and `prepublishOnly` scripts to `package.json`:**
+#### Add `build`, `watch` and `prepublishOnly` scripts to `package.json`
 
 ```
 "scripts": {
@@ -41,7 +51,8 @@ npm install --save-dev rollpkg typescript
 }
 ```
 
-**Add a `files` array with `dist` and `src` to `package.json`** (this [lets `npm` know to include these directories](https://docs.npmjs.com/files/package.json#files) when you publish your package):
+#### Add a `files` array with `dist` and `src` to `package.json`
+This [lets `npm` know to include these directories](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#files) when you publish your package.
 
 ```
 "files": [
@@ -50,7 +61,7 @@ npm install --save-dev rollpkg typescript
 ]
 ```
 
-**Create a `tsconfig.json` file and extend the `tsconfig` provided by `rollpkg`:**
+#### Create a `tsconfig.json` file and extend the `tsconfig` provided by `rollpkg`
 
 ```
 // tsconfig.json
@@ -59,7 +70,8 @@ npm install --save-dev rollpkg typescript
 }
 ```
 
-**Add `dist` to `.gitignore`** (`rollpkg` outputs the builds into the `dist` folder, and this shouldn't be checked into version control):
+#### Add `dist` to `.gitignore`
+Rollpkg outputs the builds into the `dist` folder, and this shouldn't be checked into version control.
 
 ```gitignore
 # .gitignore file
@@ -67,7 +79,8 @@ node_modules
 dist
 ```
 
-**Create an `index.ts` or `index.tsx` entry file in the `src` folder.** This entry file is required by `rollpkg` and it is the only file that has to be TypeScript, the rest of your source files can be JavaScript if you'd like. Note that you can write your entire code in `index.ts` or `index.tsx` if you only need one file.
+#### Create an `index.ts` or `index.tsx` entry file in the `src` folder
+This entry file is required by `rollpkg` and it is the only file that has to be TypeScript, the rest of your source files can be JavaScript if you'd like. Note that you can write your entire code in `index.ts` or `index.tsx` if you only need one file.
 
 ```
 package-name
@@ -81,15 +94,29 @@ package-name
 ├─README.md
 └─tsconfig.json
 ```
+#### While developing use the `build` and `watch` scripts
+```
+npm run build
+# OR
+npm run watch
+```
 
-**That’s it!** Just run `npm run build` or `npm run watch` and you're good to go. No complex options to understand or insignificant decisions to make, just sensible defaults for building packages with Rollup and TypeScript. This is what you get with `rollpkg`:
+#### Publish when ready
+```
+npm version patch | minor | major
+npm publish
+```
+
+#### That’s it!
+No complex options to understand or insignificant decisions to make, just sensible defaults for building packages with Rollup and TypeScript. This is what you get with `rollpkg`:
 
 - Zero config builds for ES Modules `esm`, CommonJS `cjs`, and Universal Module Definition `umd` into the `dist` folder.
 - The `esm` build supports tree shaking and is ready to be used in development and production by modern bundlers (e.g. Webpack).
-- The `cjs` build comes with both development and production versions, and will automatically select the appropriate version when it is used.
+- The `cjs` build comes with both development and production versions, and will automatically select the appropriate version when it's used.
 - The `umd` build comes with both development and production versions and is ready to be used directly in the browser from the Unpkg cdn. The `umd` build is bundled with your package `dependencies`, but with your package `peerDependencies` listed as required globals.
   - In development use: `<script src="https://unpkg.com/<pacakge-name>/dist/<pacakge-name>.umd.development.js"></script>`.
   - In production use: `<script src="https://unpkg.com/<pacakge-name>/dist/<pacakge-name>.umd.production.js"></script>`.
+- Builds are created using the TypeScript compiler (not Babel) so they are fully type checked.
 - Production builds are minified and any code that is gated by `if (process.env.NODE_ENV !== 'production') { ... }` is removed. Also, if using an `invariant` library, `invariant(condition, message)` will automatically be transformed into `invariant(condition)` in production builds.
 - Min-zipped package size stats for each build
 - Strict mode enabled in builds
@@ -221,6 +248,8 @@ One way to develop packages is to use the package in a live demo app as you're d
 ```
 "scripts": {
   "dev": "npm link && npm run watch && npm unlink -g",
+  "build": "rollpkg",
+  "watch": "rollpkg --watch",
   ...
 }
 ```
@@ -228,6 +257,8 @@ One way to develop packages is to use the package in a live demo app as you're d
 ---
 
 ## Build details
+
+TODO
 
 #### `rollpkg` output files
 
@@ -237,6 +268,13 @@ One way to develop packages is to use the package in a live demo app as you're d
 - `<package-name>.cjs.production.js`
 - `<package-name>.umd.development.js`
 - `<package-name>.umd.production.js`
+
+---
+
+## Rollpkg's approach to TypeScript global type pollution
+
+- TODO
+- Rollpkg allows the global space to have access to all the types defined in `node_modules/@types`, but when `rollpkg` builds it restricts the types to what's defined in the `target` and `lib` fields in `tsconfig.json` (as well as anything that is explicitly imported in your code).
 
 ---
 
