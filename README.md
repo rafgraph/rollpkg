@@ -26,14 +26,14 @@ npm install --save-dev rollpkg typescript
 ```
 
 #### Add `main`, `module`, `types`, and `sideEffects` fields to `package.json`
-Rollpkg uses a convention over configuration approach so the field values in `package.json` must be exactly as listed below, just fill in your `<package-name>` and you’re good to go.
+Rollpkg uses a convention over configuration approach, so the field values in `package.json` need to be exactly as listed below, just fill in your `<package-name>` and you’re good to go. Note that for scoped packages where `"name": "@scope/<package-name>"`, use `<scope-package-name>` for the `main` and `module` fields.
 
 ```
 {
   "name": "<package-name>",
   "main": "dist/<package-name>.cjs.js",
   "module": "dist/<package-name>.esm.js",
-  "types": "dist/<package-name>.d.ts",
+  "types": "dist/index.d.ts",
   "sideEffects": false | true,
   …
 }
@@ -118,7 +118,7 @@ No complex options to understand or insignificant decisions to make, just sensib
   - In production use: `<script src="https://unpkg.com/<pacakge-name>/dist/<pacakge-name>.umd.production.js"></script>`.
 - Builds are created using the TypeScript compiler (not Babel) so they are fully type checked.
 - Production builds are minified and any code that is gated by `if (process.env.NODE_ENV !== 'production') { ... }` is removed. Also, if using an `invariant` library, `invariant(condition, message)` will automatically be transformed into `invariant(condition)` in production builds.
-- Min-zipped package size stats for each build
+- [Bundlephobia](https://bundlephobia.com/) package size stats for each build
 - Strict mode enabled in builds
 - Source maps
 - For more info see the [Build details](#build-details) section
@@ -134,7 +134,7 @@ This includes the optional [`rollpkg` default configs](#using-default-configs-op
   "name": "<package-name>",
   "main": "dist/<package-name>.cjs.js",
   "module": "dist/<package-name>.esm.js",
-  "types": "dist/<package-name>.d.ts",
+  "types": "dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "dev": "npm link && npm run watch && npm unlink -g",
