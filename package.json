@@ -8,7 +8,8 @@
   "scripts": {
     "build": "rm -rf dist && tsc && chmod +x dist/cli.js",
     "watch": "npm run build && tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettierStaged": "echo '{\"src/**/*\": \"prettier --write --ignore-unknown\"}' | npx lint-staged --config -"
   },
   "repository": {
     "type": "git",
@@ -20,11 +21,16 @@
     "url": "https://github.com/rafgraph/rollpkg/issues"
   },
   "homepage": "https://github.com/rafgraph/rollpkg#readme",
-  "prettier": "./configs/prettier.json",
   "eslintConfig": {
-    "extends": ["./configs/eslint"],
-    "ignorePatterns": ["configs"]
+    "extends": [
+      "./configs/eslint"
+    ],
+    "ignorePatterns": [
+      "configs"
+    ]
   },
+  "prettier": "./configs/prettier.json",
+  "pre-commit": { "run": "prettierStaged" }, 
   "dependencies": {
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^16.0.0",
@@ -54,6 +60,7 @@
     "@types/babel__core": "^7.1.12",
     "@types/node": "^14.14.6",
     "@types/rimraf": "^3.0.0",
+    "pre-commit": "^1.2.2",
     "type-fest": "^0.18.0"
   }
 }
