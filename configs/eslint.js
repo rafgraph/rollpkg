@@ -29,6 +29,7 @@ module.exports = {
   rules: {
     // see for rational https://basarat.gitbook.io/typescript/main-1/defaultisbad
     'import/no-default-export': 'error',
+    '@typescript-eslint/restrict-template-expressions': 'off'
   },
   overrides: [
     {

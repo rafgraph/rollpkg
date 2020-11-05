@@ -19,8 +19,12 @@
   "bugs": {
     "url": "https://github.com/rafgraph/rollpkg/issues"
   },
-  "prettier": "./configs/prettier.json",
   "homepage": "https://github.com/rafgraph/rollpkg#readme",
+  "prettier": "./configs/prettier.json",
+  "eslintConfig": {
+    "extends": ["./configs/eslint"],
+    "ignorePatterns": ["configs"]
+  },
   "dependencies": {
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^16.0.0",
@@ -49,6 +53,7 @@
   "devDependencies": {
     "@types/babel__core": "^7.1.12",
     "@types/node": "^14.14.6",
+    "@types/rimraf": "^3.0.0",
     "type-fest": "^0.18.0"
   }
 }

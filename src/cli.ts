@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { promises as fs } from 'fs';
-import { resolve, join } from 'path';
+import { resolve } from 'path';
 import {
   rollup,
   watch,
@@ -52,11 +52,11 @@ const rollpkg = async () => {
 
   let pkgJson: PackageJson;
   try {
-    const readPkgJson = (await fs.readFile(
+    const readPkgJson = await fs.readFile(
       resolve(process.cwd(), 'package.json'),
       'utf8',
-    )) as string;
-    pkgJson = JSON.parse(readPkgJson);
+    );
+    pkgJson = JSON.parse(readPkgJson) as PackageJson;
   } catch (e) {
     rollpkgError(
       `Cannot read package.json at ${resolve(process.cwd(), 'package.json')}`,
@@ -154,6 +154,7 @@ const rollpkg = async () => {
       include: ['**/*.ts+(|x)', '**/*.js+(|x)'],
     }),
     replace({ __DEV__: "process.env.NODE_ENV !== 'production'" }),
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore invariantPlugin is missing name, this isn't causing an actual error AFAIK, remove when pr is released: https://github.com/apollographql/invariant-packages/pull/45
     invariantPlugin(),
   ];
@@ -320,20 +321,26 @@ if (process.env.NODE_ENV === 'production') {
         'utf8',
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       await esm, cjs, cjsProd, umd, umdProd, cjsEntryFile;
+
       logToConsole('Rollpkg build SUCCESS!');
       logToConsole('Calculating Bundlephobia package size...');
+
       const results = await getPackageStats(process.cwd());
       logToConsole(results);
-    } catch (e) {
-      if (e.plugin === 'rpt2') {
-        tsError(e.message);
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null) {
+        const errorObject = error as { [key: string]: unknown };
+        if (errorObject.plugin === 'rpt2') {
+          tsError(errorObject.message as string);
+        }
       } else {
-        rollupError(e);
+        rollupError(error);
       }
     }
     logToConsole('Rollpkg END');
   }
 };
 
-rollpkg();
+void rollpkg();
