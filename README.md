@@ -192,7 +192,7 @@ If you want to use Prettier (recommended) you can extend the [config provided by
 "prettier": "rollpkg/configs/prettier.json"
 ```
 
-You may also want to set up a pre-commit hook using `husky` and `lint-staged` so any changes are auto-formatted before being committed. See the [Prettier docs for Git hooks](https://prettier.io/docs/en/install.html#git-hooks).
+You may also want to set up a pre-commit hook using [`pre-commit`](https://github.com/observing/pre-commit) or [`husky`](https://github.com/typicode/husky) and [`lint-staged`](https://github.com/okonet/lint-staged) so any changes are auto-formatted before being committed. See the [Prettier docs for Git hooks](https://prettier.io/docs/en/precommit.html).
 
 ---
 
