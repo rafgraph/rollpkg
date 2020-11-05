@@ -45,8 +45,8 @@ Rollpkg uses a convention over configuration approach, so the field values in `p
 
 ```
 "scripts": {
-  "build": "rollpkg",
-  "watch": "rollpkg --watch",
+  "build": "rollpkg build",
+  "watch": "rollpkg watch",
   "prepublishOnly": "npm run build"
 }
 ```
@@ -119,6 +119,7 @@ No complex options to understand or insignificant decisions to make, just sensib
 - Builds are created using the TypeScript compiler (not Babel) so they are fully type checked.
 - Production builds are minified and any code that is gated by `if (process.env.NODE_ENV !== 'production') { ... }` is removed. Also, if using an `invariant` library, `invariant(condition, message)` will automatically be transformed into `invariant(condition)` in production builds.
 - [Bundlephobia](https://bundlephobia.com/) package size stats for each build
+- Generated `*.d.ts` type files
 - Strict mode enabled in builds
 - Source maps
 - For more info see the [Build details](#build-details) section
@@ -138,8 +139,8 @@ This includes the optional [`rollpkg` default configs](#using-default-configs-op
   "sideEffects": false,
   "scripts": {
     "dev": "npm link && npm run watch && npm unlink -g",
-    "build": "rollpkg",
-    "watch": "rollpkg --watch",
+    "build": "rollpkg build",
+    "watch": "rollpkg watch",
     "prepublishOnly": "npm run build",
     "test": "jest",
     "test:watch": "jest --watchAll",
@@ -241,15 +242,15 @@ coverage
 
 ## Package development with `npm link`
 
-One way to develop packages is to use the package in a live demo app as you're developing it. Using `rollpkg --watch` with [`npm link`](https://docs.npmjs.com/cli/v7/commands/npm-link) allows you to see live changes in your demo app as you make changes to your package code. Running `npm link` in the package directory will link the package to global `node_modules`, and then running `npm link <package-name>` in the demo app directory will link the package from global `node_modules` to your demo app. A good way to set this up is to add a `dev` script to `package.json` (note that `npm unlink -g` removes link from global `node_modules` after you're done with the `watch` script):
+One way to develop packages is to use the package in a live demo app as you're developing it. Using `rollpkg watch` with [`npm link`](https://docs.npmjs.com/cli/v7/commands/npm-link) allows you to see live changes in your demo app as you make changes to your package code. Running `npm link` in the package directory will link the package to global `node_modules`, and then running `npm link <package-name>` in the demo app directory will link the package from global `node_modules` to your demo app. A good way to set this up is to add a `dev` script to `package.json` (note that `npm unlink -g` removes link from global `node_modules` after you're done with the `watch` script):
 
 > For a real world example of how to do this see the example package and corresponding demo app: [rollpkg-example-package](TODO) and [rollpkg-example-package-demo](TODO)
 
 ```
 "scripts": {
   "dev": "npm link && npm run watch && npm unlink -g",
-  "build": "rollpkg",
-  "watch": "rollpkg --watch",
+  "build": "rollpkg build",
+  "watch": "rollpkg watch",
   ...
 }
 ```
@@ -281,7 +282,7 @@ TODO
 ## FAQ
 
 - **Does `rollpkg` really have zero configuration options?**
-  - Yup, other than `--watch` there are no configuration options. Rollpkg uses a convention over configuration approach, if you are using `rollpkg` then you are using the convention and there are zero build decisions to worry about, just focus on writing your code, isn't that liberating?
+  - Yup, there are zero configuration options. Rollpkg uses a convention over configuration approach, if you are using `rollpkg` then you are using the convention and there are zero build decisions to worry about, just focus on writing your code, isn't that liberating?
 - **What if I need to do X and Rollpkg doesn't support it?**
   - Open an issue and explain why X should be part of the convention.
 - **How do I use `rollpkg` with JavaScript?**

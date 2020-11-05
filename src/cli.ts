@@ -41,13 +41,13 @@ const rollpkg = async () => {
 
   const args = process.argv.slice(2);
   invariant(
-    args.length === 0 || (args.length === 1 && args[0] === '--watch'),
-    `rollpkg only accepts a "--watch" argument, or no arguments, received: "${args.join(
+    args.length === 1 && (args[0] === 'build' || args[0] === 'watch'),
+    `rollpkg requires a "build" or "watch" command with no arguments, received: "${args.join(
       ' ',
     )}"`,
   );
 
-  const watchMode = args[0] === '--watch';
+  const watchMode = args[0] === 'watch';
   setWatchModeForErrorHandling(watchMode);
 
   let pkgJson: PackageJson;
