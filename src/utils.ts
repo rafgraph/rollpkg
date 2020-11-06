@@ -1,9 +1,5 @@
-import { promises as fs } from 'fs';
+import * as fs from 'fs-extra';
 import { resolve } from 'path';
-import { promisify } from 'util';
-import callbackRimraf from 'rimraf';
-
-export const rimraf = promisify(callbackRimraf);
 
 let watchMode = false;
 export const setWatchModeForErrorHandling = (watch: boolean): void => {
@@ -49,7 +45,7 @@ export const tsError: (message: string) => void | never = (message) => {
   }
 };
 
-export const rollupError: (error: unknown) => void | never = (error) => {
+export const genericError: (error: unknown) => void | never = (error) => {
   if (watchMode) clearConsole();
   console.error(error);
   if (!watchMode) {
