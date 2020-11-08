@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import { getPackageStats } from 'package-build-stats';
-
 import { checkInvariantsAndGetConfiguration } from './configureRollpkg';
+import {
+  calculateBundlephobiaStats,
+  printBundlephobiaStats,
+} from './bundlephobiaStats';
 import {
   createRollupConfig,
   rollupWatch,
@@ -158,6 +160,7 @@ const rollpkg = async () => {
   // write rollup bundles
   const writeRollupBundlesMessage = `Writing builds for "${pkgJsonName}" esm, cjs, umd`;
   let writtenBundles;
+
   try {
     writtenBundles = writeBundles({
       pkgName,
@@ -192,25 +195,21 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // calculate bundlephobia package stats
+  const bundlephobiaStatsMessage = `Calculating Bundlephobia stats for "${pkgJsonName}"`;
+
   try {
-    // used to silence getPackageStats function
-    const log = console.log;
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    console.log = () => {};
-    const packageStatsPromise = getPackageStats(process.cwd());
-    await progressEstimator(
-      packageStatsPromise,
-      `Calculating Bundlephobia stats for "${pkgJsonName}"`,
-    );
-    console.log = log;
-    const packageStats = await packageStatsPromise;
-    console.log(`Minified size: ${packageStats.size}`);
-    console.log(`Minified and gzipped size: ${packageStats.gzip}`);
-  } catch (error: unknown) {
+    const packageStats = calculateBundlephobiaStats({ cwd });
+
+    await progressEstimator(packageStats, bundlephobiaStatsMessage);
+
+    printBundlephobiaStats(await packageStats);
+  } catch (error) {
     logError({
-      failedAt: 'Calculating Bundlephobia package stats',
+      failedAt: bundlephobiaStatsMessage,
       message: `Bundlephobia Error: ${errorAsObjectWithMessage(error).message}`,
     });
+    // don' throw EXIT_ON_ERROR because the build has already succeeded
+    // and an error in stats calculation shouldn't cause `rollpkg build` to fail
   }
   /////////////////////////////////////
 };
@@ -218,10 +217,13 @@ const rollpkg = async () => {
 const exitCode = process.argv[2] === 'watch' ? 0 : 1;
 
 rollpkg().catch((error) => {
-  cleanDist().finally(() => {
-    if (error === EXIT_ON_ERROR) {
+  if (error === EXIT_ON_ERROR) {
+    // only clean dist if it's a known error
+    cleanDist().finally(() => {
       process.exit(exitCode);
-    }
+    });
+  } else {
+    // unknown error, throw it and leave dist as it is
     throw error;
-  });
+  }
 });
