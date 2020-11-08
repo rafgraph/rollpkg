@@ -21,28 +21,30 @@ import { terser } from 'rollup-plugin-terser';
 import babel from '@rollup/plugin-babel';
 import { DEFAULT_EXTENSIONS } from '@babel/core';
 import { getPackageStats } from 'package-build-stats';
-import { PackageJson } from 'type-fest';
 
 import {
   progressEstimator,
   cleanDist,
-  errorAsObjectWithMessage,
-  logError,
-  logRollpkgError,
-  logTsError,
-  EXIT_ON_ERROR,
-  invariant,
   convertPkgNameToKebabCase,
   convertKebabCaseToPascalCase,
-  fileExists,
   clearConsole,
   clearLine,
 } from './utils';
 
+import {
+  EXIT_ON_ERROR,
+  errorAsObjectWithMessage,
+  logError,
+  logRollpkgError,
+  logTsError,
+} from './errorUtils';
+
+import { checkInvariantsAndGetConfiguration } from './configureRollpkg';
+
 const rollpkg = async () => {
   /////////////////////////////////////
-  // clean dist
-  const cleanDistMessage = 'Clean dist folder';
+  // clean dist folder
+  const cleanDistMessage = 'Cleaning dist folder';
   try {
     const clean = cleanDist();
     await progressEstimator(clean, cleanDistMessage);
@@ -54,113 +56,42 @@ const rollpkg = async () => {
     });
     throw EXIT_ON_ERROR;
   }
+  /////////////////////////////////////
 
   /////////////////////////////////////
   // rollpkg invariants and configuration
-  console.log('Checking rollpkg mode...');
-
   const args = process.argv.slice(2);
-  invariant(
-    args.length === 1 && (args[0] === 'build' || args[0] === 'watch'),
-    `rollpkg requires a "build" or "watch" command with no arguments, received: "${args.join(
-      ' ',
-    )}"`,
-  );
+  const cwd = process.cwd();
+  const invariantsAndConfigurationMessage = 'Checking rollpkg invariants';
+  let rollpkgConfiguration;
 
-  const watchMode = args[0] === 'watch';
-
-  console.log('Checking package.json...');
-
-  let pkgJson: PackageJson;
   try {
-    const readPkgJson = await fs.readFile(
-      resolve(process.cwd(), 'package.json'),
-      'utf8',
+    rollpkgConfiguration = checkInvariantsAndGetConfiguration({ args, cwd });
+    await progressEstimator(
+      rollpkgConfiguration,
+      invariantsAndConfigurationMessage,
     );
-    pkgJson = JSON.parse(readPkgJson) as PackageJson;
-  } catch (e) {
+  } catch (error) {
     logRollpkgError({
-      message: `Cannot read package.json at ${resolve(
-        process.cwd(),
-        'package.json',
-      )}`,
-    });
-    throw EXIT_ON_ERROR;
-  }
-  invariant(
-    typeof pkgJson.name === 'string',
-    `"name" field is required in package.json and needs to be a string, value found: ${pkgJson.name}`,
-  );
-  // type cast as string because previous invariant check makes this code
-  // unreachable if pkgJson.name is not a string, which TS doesn't understand
-  const pkgName = convertPkgNameToKebabCase(pkgJson.name as string);
-
-  const mainShouldBe = `dist/${pkgName}.cjs.js`;
-  const moduleShouldBe = `dist/${pkgName}.esm.js`;
-  const typesShouldBe = `dist/index.d.ts`;
-  invariant(
-    pkgJson.main === mainShouldBe,
-    `The value of "main" in package.json needs to be "${mainShouldBe}", value found: "${pkgJson.main}"`,
-  );
-  invariant(
-    pkgJson.module === moduleShouldBe,
-    `The value of "module" in package.json needs to be "${moduleShouldBe}", value found: "${pkgJson.module}"`,
-  );
-  invariant(
-    pkgJson.types === typesShouldBe,
-    `The value of "types" in package.json needs to be "${typesShouldBe}", value found: "${pkgJson.types}"`,
-  );
-  invariant(
-    typeof pkgJson.sideEffects === 'boolean',
-    `"sideEffects" field is required in package.json and needs to be a boolean, value found: ${pkgJson.sideEffects}`,
-  );
-  // type cast as boolean because previous invariant check makes this code
-  // unreachable if pkgJson.name is not a string, which TS doesn't understand
-  const pkgSideEffects = pkgJson.sideEffects as boolean;
-
-  console.log('Checking for tsconfig...');
-
-  try {
-    await fs.readFile(resolve(process.cwd(), 'tsconfig.json'), 'utf8');
-  } catch (e) {
-    logRollpkgError({
-      message: `Cannot read tsconfig.json at ${resolve(
-        process.cwd(),
-        'tsconfig.json',
-      )}`,
+      failedAt: invariantsAndConfigurationMessage,
+      message: errorAsObjectWithMessage(error).message,
     });
     throw EXIT_ON_ERROR;
   }
 
-  console.log('Checking for index.ts or index.tsx entry file...');
-
-  const srcDir = resolve(process.cwd(), 'src');
-  const indexTsExists = await fileExists(srcDir, 'index.ts');
-  const indexTsxExists = await fileExists(srcDir, 'index.tsx');
-
-  invariant(
-    !(indexTsExists && indexTsxExists),
-    `Cannot have both index.ts and index.tsx files in ${srcDir}`,
-  );
-  invariant(
-    indexTsExists || indexTsxExists,
-    `Cannot find index.ts or index.tsx entry file in ${srcDir}`,
-  );
-
-  const input = resolve(srcDir, indexTsExists ? 'index.ts' : 'index.tsx');
-
-  console.log('Creating up rollup config...');
-
-  const pkgDependencies = pkgJson.dependencies
-    ? Object.keys(pkgJson.dependencies)
-    : [];
-  const pkgPeerDependencies = pkgJson.peerDependencies
-    ? Object.keys(pkgJson.peerDependencies)
-    : [];
+  const {
+    watchMode,
+    pkgJsonName,
+    pkgName,
+    input,
+    pkgSideEffects,
+    pkgDependencies,
+    pkgPeerDependencies,
+  } = await rollpkgConfiguration;
+  /////////////////////////////////////
 
   /////////////////////////////////////
   // create rollup config
-
   const pkgPeerDependencyGlobals: { [key: string]: string } = {};
   pkgPeerDependencies.forEach((peerDep) => {
     pkgPeerDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
@@ -204,6 +135,9 @@ const rollpkg = async () => {
         babelHelpers: 'bundled',
         extensions: [...DEFAULT_EXTENSIONS, '.ts', '.tsx'],
         plugins: ['annotate-pure-calls'],
+        skipPreflightCheck: true,
+        configFile: false,
+        babelrc: false,
       }),
     );
 
@@ -223,14 +157,14 @@ const rollpkg = async () => {
     tryCatchDeoptimization: pkgSideEffects,
     unknownGlobalSideEffects: pkgSideEffects,
   };
+  /////////////////////////////////////
 
   /////////////////////////////////////
   // create and write rollup builds
-
   if (watchMode) {
     process.on('SIGINT', function () {
       clearLine();
-      console.log('\nRollpkg watch END');
+      console.log('ROLLPKG WATCH END 👀👋', '\n');
       process.exit(0);
     });
 
@@ -263,12 +197,12 @@ const rollpkg = async () => {
           break;
         case 'BUNDLE_START':
           clearConsole();
-          console.log('Rollpkg building...');
+          console.log('Rollpkg building...', '\n');
           break;
         case 'BUNDLE_END':
           clearConsole();
-          console.log('Rollpkg build successful!');
-          console.log('\nWatching for changes...');
+          console.log('Rollpkg build successful!', '\n');
+          console.log('Watching for changes...', '\n');
           break;
         case 'END':
           break;
@@ -279,7 +213,7 @@ const rollpkg = async () => {
           } else {
             logError({ fullError: event.error });
           }
-          console.log('\nWatching for changes...');
+          console.log('Watching for changes...', '\n');
           break;
       }
     });
@@ -321,7 +255,7 @@ const rollpkg = async () => {
 
       await progressEstimator(
         buildBundles,
-        `Creating builds for "${pkgJson.name}": esm, cjs, umd`,
+        `Creating builds for "${pkgJsonName}" esm, cjs, umd`,
         { estimate: 5000 },
       );
 
@@ -384,7 +318,7 @@ if (process.env.NODE_ENV === 'production') {
       ]);
       await progressEstimator(
         writeBuilds,
-        `Writing builds for "${pkgJson.name}": esm, cjs, umd`,
+        `Writing builds for "${pkgJsonName}" esm, cjs, umd`,
         { estimate: 1000 },
       );
 
@@ -493,7 +427,10 @@ if (process.env.NODE_ENV === 'production') {
     await progressEstimator(Promise.resolve(), 'ROLLPKG BUILD SUCCESS 😁😘', {
       estimate: 0,
     });
+    /////////////////////////////////////
 
+    /////////////////////////////////////
+    // calculate bundlephobia package stats
     try {
       // used to silence getPackageStats function
       const log = console.log;
@@ -502,7 +439,7 @@ if (process.env.NODE_ENV === 'production') {
       const packageStatsPromise = getPackageStats(process.cwd());
       await progressEstimator(
         packageStatsPromise,
-        `Calculating Bundlephobia stats for "${pkgJson.name}"`,
+        `Calculating Bundlephobia stats for "${pkgJsonName}"`,
       );
       console.log = log;
       const packageStats = await packageStatsPromise;
@@ -510,10 +447,13 @@ if (process.env.NODE_ENV === 'production') {
       console.log(`Minified and gzipped size: ${packageStats.gzip}`);
     } catch (error: unknown) {
       logError({
-        failedAt: 'Calculate Bundlephobia package stats',
-        fullError: errorAsObjectWithMessage(error).message,
+        failedAt: 'Calculating Bundlephobia package stats',
+        message: `Bundlephobia Error: ${
+          errorAsObjectWithMessage(error).message
+        }`,
       });
     }
+    /////////////////////////////////////
   }
 };
 
