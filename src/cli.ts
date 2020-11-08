@@ -24,19 +24,40 @@ import { getPackageStats } from 'package-build-stats';
 import { PackageJson } from 'type-fest';
 
 import {
-  rollpkgError,
+  progressEstimator,
+  cleanDist,
+  errorAsObjectWithMessage,
+  logError,
+  logRollpkgError,
+  logTsError,
+  EXIT_ON_ERROR,
   invariant,
-  tsError,
-  genericError,
-  logToConsole,
   convertPkgNameToKebabCase,
   convertKebabCaseToPascalCase,
   fileExists,
-  setWatchModeForErrorHandling,
+  clearConsole,
+  clearLine,
 } from './utils';
 
 const rollpkg = async () => {
-  await fs.emptyDir('./dist').catch(genericError);
+  /////////////////////////////////////
+  // clean dist
+  const cleanDistMessage = 'Clean dist folder';
+  try {
+    const clean = cleanDist();
+    await progressEstimator(clean, cleanDistMessage);
+  } catch (error) {
+    logError({
+      failedAt: cleanDistMessage,
+      message: errorAsObjectWithMessage(error).message,
+      fullError: error,
+    });
+    throw EXIT_ON_ERROR;
+  }
+
+  /////////////////////////////////////
+  // rollpkg invariants and configuration
+  console.log('Checking rollpkg mode...');
 
   const args = process.argv.slice(2);
   invariant(
@@ -47,7 +68,8 @@ const rollpkg = async () => {
   );
 
   const watchMode = args[0] === 'watch';
-  setWatchModeForErrorHandling(watchMode);
+
+  console.log('Checking package.json...');
 
   let pkgJson: PackageJson;
   try {
@@ -57,9 +79,13 @@ const rollpkg = async () => {
     );
     pkgJson = JSON.parse(readPkgJson) as PackageJson;
   } catch (e) {
-    rollpkgError(
-      `Cannot read package.json at ${resolve(process.cwd(), 'package.json')}`,
-    );
+    logRollpkgError({
+      message: `Cannot read package.json at ${resolve(
+        process.cwd(),
+        'package.json',
+      )}`,
+    });
+    throw EXIT_ON_ERROR;
   }
   invariant(
     typeof pkgJson.name === 'string',
@@ -92,13 +118,21 @@ const rollpkg = async () => {
   // unreachable if pkgJson.name is not a string, which TS doesn't understand
   const pkgSideEffects = pkgJson.sideEffects as boolean;
 
+  console.log('Checking for tsconfig...');
+
   try {
     await fs.readFile(resolve(process.cwd(), 'tsconfig.json'), 'utf8');
   } catch (e) {
-    rollpkgError(
-      `Cannot read tsconfig.json at ${resolve(process.cwd(), 'tsconfig.json')}`,
-    );
+    logRollpkgError({
+      message: `Cannot read tsconfig.json at ${resolve(
+        process.cwd(),
+        'tsconfig.json',
+      )}`,
+    });
+    throw EXIT_ON_ERROR;
   }
+
+  console.log('Checking for index.ts or index.tsx entry file...');
 
   const srcDir = resolve(process.cwd(), 'src');
   const indexTsExists = await fileExists(srcDir, 'index.ts');
@@ -115,12 +149,18 @@ const rollpkg = async () => {
 
   const input = resolve(srcDir, indexTsExists ? 'index.ts' : 'index.tsx');
 
+  console.log('Creating up rollup config...');
+
   const pkgDependencies = pkgJson.dependencies
     ? Object.keys(pkgJson.dependencies)
     : [];
   const pkgPeerDependencies = pkgJson.peerDependencies
     ? Object.keys(pkgJson.peerDependencies)
     : [];
+
+  /////////////////////////////////////
+  // create rollup config
+
   const pkgPeerDependencyGlobals: { [key: string]: string } = {};
   pkgPeerDependencies.forEach((peerDep) => {
     pkgPeerDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
@@ -184,9 +224,13 @@ const rollpkg = async () => {
     unknownGlobalSideEffects: pkgSideEffects,
   };
 
+  /////////////////////////////////////
+  // create and write rollup builds
+
   if (watchMode) {
     process.on('SIGINT', function () {
-      logToConsole('Rollpkg watch END');
+      clearLine();
+      console.log('\nRollpkg watch END');
       process.exit(0);
     });
 
@@ -218,25 +262,73 @@ const rollpkg = async () => {
         case 'START':
           break;
         case 'BUNDLE_START':
-          logToConsole(event);
+          clearConsole();
+          console.log('Rollpkg building...');
           break;
         case 'BUNDLE_END':
-          logToConsole(event);
+          clearConsole();
+          console.log('Rollpkg build successful!');
+          console.log('\nWatching for changes...');
           break;
         case 'END':
           break;
         case 'ERROR':
+          clearConsole();
           if (event.error.plugin === 'rpt2') {
-            tsError(event.error.message);
+            logTsError({ message: event.error.message });
           } else {
-            genericError(event.error);
+            logError({ fullError: event.error });
           }
+          console.log('\nWatching for changes...');
           break;
       }
     });
   } else {
-    // prettier-ignore
-    const cjsEntryContent = 
+    try {
+      const buildBundles = Promise.all([
+        // esm and cjs development builds
+        rollup({
+          external: [...pkgDependencies, ...pkgPeerDependencies],
+          input,
+          treeshake: treeshakeOptions,
+          plugins: buildPlugins,
+        }),
+
+        // cjs production build
+        rollup({
+          external: [...pkgDependencies, ...pkgPeerDependencies],
+          input,
+          treeshake: treeshakeOptions,
+          plugins: prodBuildPlugins,
+        }),
+
+        // umd development build
+        rollup({
+          external: [...pkgPeerDependencies],
+          input,
+          treeshake: treeshakeOptions,
+          plugins: buildPlugins,
+        }),
+
+        // umd production build
+        rollup({
+          external: [...pkgPeerDependencies],
+          input,
+          treeshake: treeshakeOptions,
+          plugins: prodBuildPlugins,
+        }),
+      ]);
+
+      await progressEstimator(
+        buildBundles,
+        `Creating builds for "${pkgJson.name}": esm, cjs, umd`,
+        { estimate: 5000 },
+      );
+
+      const [bundle, bundleProd, bundleUmd, bundleUmdProd] = await buildBundles;
+
+      // prettier-ignore
+      const cjsEntryContent = 
 `'use strict';
 
 if (process.env.NODE_ENV === 'production') {
@@ -245,110 +337,193 @@ if (process.env.NODE_ENV === 'production') {
   module.exports = require('./${pkgName}.cjs.development.js');
 }`;
 
-    logToConsole('Rollpkg building...');
+      const writeBuilds = Promise.all([
+        bundle.write({
+          file: `dist/${pkgName}.esm.js`,
+          format: 'esm',
+          sourcemap: true,
+          plugins: outputPlugins,
+        }),
 
-    try {
-      await Promise.all([
-        // cjs entry file
+        bundle.write({
+          file: `dist/${pkgName}.cjs.development.js`,
+          format: 'cjs',
+          sourcemap: true,
+          plugins: outputPlugins,
+        }),
+
+        bundleProd.write({
+          file: `dist/${pkgName}.cjs.production.js`,
+          format: 'cjs',
+          sourcemap: true,
+          plugins: outputProdPlugins,
+        }),
+
+        bundleUmd.write({
+          file: `dist/${pkgName}.umd.development.js`,
+          format: 'umd',
+          name: pkgUmdName,
+          globals: pkgPeerDependencyGlobals,
+          sourcemap: true,
+          plugins: outputPlugins,
+        }),
+
+        bundleUmdProd.write({
+          file: `dist/${pkgName}.umd.production.js`,
+          format: 'umd',
+          name: pkgUmdName,
+          globals: pkgPeerDependencyGlobals,
+          sourcemap: true,
+          plugins: outputProdPlugins,
+        }),
         fs.writeFile(
           resolve(process.cwd(), 'dist', `${pkgName}.cjs.js`),
           cjsEntryContent,
           'utf8',
         ),
-
-        // esm and cjs development builds
-        rollup({
-          external: [...pkgDependencies, ...pkgPeerDependencies],
-          input,
-          treeshake: treeshakeOptions,
-          plugins: buildPlugins,
-        }).then((bundle) =>
-          Promise.all([
-            bundle.write({
-              file: `dist/${pkgName}.esm.js`,
-              format: 'esm',
-              sourcemap: true,
-              plugins: outputPlugins,
-            }),
-            bundle.write({
-              file: `dist/${pkgName}.cjs.development.js`,
-              format: 'cjs',
-              sourcemap: true,
-              plugins: outputPlugins,
-            }),
-          ]),
-        ),
-
-        // cjs production build
-        rollup({
-          external: [...pkgDependencies, ...pkgPeerDependencies],
-          input,
-          treeshake: treeshakeOptions,
-          plugins: prodBuildPlugins,
-        }).then((bundleProd) =>
-          bundleProd.write({
-            file: `dist/${pkgName}.cjs.production.js`,
-            format: 'cjs',
-            sourcemap: true,
-            plugins: outputProdPlugins,
-          }),
-        ),
-
-        // umd development build
-        rollup({
-          external: [...pkgPeerDependencies],
-          input,
-          treeshake: treeshakeOptions,
-          plugins: buildPlugins,
-        }).then((bundleUmd) =>
-          bundleUmd.write({
-            file: `dist/${pkgName}.umd.development.js`,
-            format: 'umd',
-            name: pkgUmdName,
-            globals: pkgPeerDependencyGlobals,
-            sourcemap: true,
-            plugins: outputPlugins,
-          }),
-        ),
-
-        // umd production build
-        rollup({
-          external: [...pkgPeerDependencies],
-          input,
-          treeshake: treeshakeOptions,
-          plugins: prodBuildPlugins,
-        }).then((bundleUmdProd) =>
-          bundleUmdProd.write({
-            file: `dist/${pkgName}.umd.production.js`,
-            format: 'umd',
-            name: pkgUmdName,
-            globals: pkgPeerDependencyGlobals,
-            sourcemap: true,
-            plugins: outputProdPlugins,
-          }),
-        ),
       ]);
-    } catch (error: unknown) {
-      if (typeof error === 'object' && error !== null) {
-        const errorObject = error as { [key: string]: unknown };
-        if (errorObject.plugin === 'rpt2') {
-          tsError(errorObject.message as string);
-        }
+      await progressEstimator(
+        writeBuilds,
+        `Writing builds for "${pkgJson.name}": esm, cjs, umd`,
+        { estimate: 1000 },
+      );
+
+      /////////////////////////////////////
+      // previous way of creating builds
+
+      //       const bundle = rollup({
+      //         external: [...pkgDependencies, ...pkgPeerDependencies],
+      //         input,
+      //         treeshake: treeshakeOptions,
+      //         plugins: buildPlugins,
+      //       });
+
+      //       const bundleProd = rollup({
+      //         external: [...pkgDependencies, ...pkgPeerDependencies],
+      //         input,
+      //         treeshake: treeshakeOptions,
+      //         plugins: prodBuildPlugins,
+      //       });
+
+      //       const bundleUmd = rollup({
+      //         external: [...pkgPeerDependencies],
+      //         input,
+      //         treeshake: treeshakeOptions,
+      //         plugins: buildPlugins,
+      //       });
+
+      //       const bundleUmdProd = rollup({
+      //         external: [...pkgPeerDependencies],
+      //         input,
+      //         treeshake: treeshakeOptions,
+      //         plugins: prodBuildPlugins,
+      //       });
+
+      //       const esm = (await bundle).write({
+      //         file: `dist/${pkgName}.esm.js`,
+      //         format: 'esm',
+      //         sourcemap: true,
+      //         plugins: outputPlugins,
+      //       });
+
+      //       const cjs = (await bundle).write({
+      //         file: `dist/${pkgName}.cjs.development.js`,
+      //         format: 'cjs',
+      //         sourcemap: true,
+      //         plugins: outputPlugins,
+      //       });
+
+      //       const cjsProd = (await bundleProd).write({
+      //         file: `dist/${pkgName}.cjs.production.js`,
+      //         format: 'cjs',
+      //         sourcemap: true,
+      //         plugins: outputProdPlugins,
+      //       });
+
+      //       const umd = (await bundleUmd).write({
+      //         file: `dist/${pkgName}.umd.development.js`,
+      //         format: 'umd',
+      //         name: pkgUmdName,
+      //         globals: pkgPeerDependencyGlobals,
+      //         sourcemap: true,
+      //         plugins: outputPlugins,
+      //       });
+
+      //       const umdProd = (await bundleUmdProd).write({
+      //         file: `dist/${pkgName}.umd.production.js`,
+      //         format: 'umd',
+      //         name: pkgUmdName,
+      //         globals: pkgPeerDependencyGlobals,
+      //         sourcemap: true,
+      //         plugins: outputProdPlugins,
+      //       });
+
+      //       // prettier-ignore
+      //       const cjsEntryContent =
+      // `'use strict';
+
+      // if (process.env.NODE_ENV === 'production') {
+      //   module.exports = require('./${pkgName}.cjs.production.js');
+      // } else {
+      //   module.exports = require('./${pkgName}.cjs.development.js');
+      // }`;
+
+      //       const cjsEntryFile = fs.writeFile(
+      //         resolve(process.cwd(), 'dist', `${pkgName}.cjs.js`),
+      //         cjsEntryContent,
+      //         'utf8',
+      //       );
+
+      //       // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      //       await esm, cjs, cjsProd, umd, umdProd, cjsEntryFile;
+      /////////////////////////////////////
+    } catch (error) {
+      const errorAsObject = errorAsObjectWithMessage(error);
+      if (errorAsObject.plugin === 'rpt2') {
+        logTsError({ message: errorAsObject.message });
+      } else {
+        logError({
+          failedAt: 'Writing builds for ...',
+          fullError: error,
+        });
       }
-      genericError(error);
+      throw EXIT_ON_ERROR;
     }
-    logToConsole('Rollpkg build SUCCESS!');
 
-    logToConsole('Calculating Bundlephobia package size...');
+    await progressEstimator(Promise.resolve(), 'ROLLPKG BUILD SUCCESS 😁😘', {
+      estimate: 0,
+    });
+
     try {
-      const results = await getPackageStats(process.cwd());
-      logToConsole(results);
+      // used to silence getPackageStats function
+      const log = console.log;
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      console.log = () => {};
+      const packageStatsPromise = getPackageStats(process.cwd());
+      await progressEstimator(
+        packageStatsPromise,
+        `Calculating Bundlephobia stats for "${pkgJson.name}"`,
+      );
+      console.log = log;
+      const packageStats = await packageStatsPromise;
+      console.log(`Minified size: ${packageStats.size}`);
+      console.log(`Minified and gzipped size: ${packageStats.gzip}`);
     } catch (error: unknown) {
-      genericError(error);
+      logError({
+        failedAt: 'Calculate Bundlephobia package stats',
+        fullError: errorAsObjectWithMessage(error).message,
+      });
     }
-
-    logToConsole('Rollpkg END');
   }
 };
 
-void rollpkg();
+const exitCode = process.argv[2] === 'watch' ? 0 : 1;
+
+rollpkg().catch((error) => {
+  cleanDist().finally(() => {
+    if (error === EXIT_ON_ERROR) {
+      process.exit(exitCode);
+    }
+    throw error;
+  });
+});

@@ -1,56 +1,77 @@
 import * as fs from 'fs-extra';
 import { resolve } from 'path';
+import * as readline from 'readline';
+import createProgressEstimator from 'progress-estimator';
+import cliSpinners from 'cli-spinners';
 
-let watchMode = false;
-export const setWatchModeForErrorHandling = (watch: boolean): void => {
-  watchMode = watch;
-};
+export const progressEstimator = createProgressEstimator({
+  storagePath: resolve(__dirname, '.progress-estimator'),
+  spinner: cliSpinners.earth,
+});
 
-export const rollpkgError: (message: string) => never = (message) => {
-  console.error(`Rollpkg Error: ${message}`);
-  if (watchMode) {
-    console.log('Rollpkg watch FAIL!');
-    process.exit(0);
-  } else {
-    console.log('Rollpkg build FAIL!');
-    process.exit(1);
-  }
-};
+export const cleanDist: () => Promise<void> = () => fs.emptyDir('./dist');
 
-export const invariant: (allGood: boolean, message: string) => void | never = (
-  allGood,
-  message,
-) => {
-  if (!allGood) rollpkgError(message);
-};
-
-const clearConsole = () => {
+export const clearConsole: () => void = () => {
   // from https://github.com/facebook/create-react-app/blob/master/packages/react-dev-utils/clearConsole.js
   process.stdout.write(
     process.platform === 'win32' ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H',
   );
 };
 
-export const logToConsole = (toLog: unknown): void => {
-  if (watchMode) clearConsole();
-  console.log(toLog);
+export const clearLine: () => void = () => {
+  readline.clearLine(process.stdout, 0);
 };
 
-export const tsError: (message: string) => void | never = (message) => {
-  if (watchMode) clearConsole();
-  console.error(`TypeScript Error: ${message}`);
-  if (!watchMode) {
-    console.log('Rollpkg build FAIL!');
-    process.exit(1);
+export const EXIT_ON_ERROR = 'EXPORT_ON_ERROR';
+
+export const errorAsObjectWithMessage: (
+  error: unknown,
+) => { [key: string]: unknown } = (error) => {
+  if (typeof error === 'object' && error !== null) {
+    return error as { [key: string]: unknown };
   }
+  return { message: error };
 };
 
-export const genericError: (error: unknown) => void | never = (error) => {
-  if (watchMode) clearConsole();
-  console.error(error);
-  if (!watchMode) {
-    console.log('Rollpkg build FAIL!');
-    process.exit(1);
+export const logError: (error: {
+  failedAt?: string;
+  message?: unknown;
+  fullError?: unknown;
+}) => void = ({ failedAt, message, fullError }) => {
+  if (failedAt) console.error(`✗ FAILED: ${failedAt}`);
+  if (message) console.error(message);
+  if (fullError) console.error(fullError);
+};
+
+export const logTsError: (error: {
+  failedAt?: string;
+  message: unknown;
+}) => void = ({ failedAt, message }) => {
+  logError({
+    failedAt,
+    message: `TypeScript Error: ${message}`,
+  });
+};
+
+export const logRollpkgError: (error: {
+  failedAt?: string;
+  message: unknown;
+}) => void = ({ failedAt, message }) => {
+  logError({
+    failedAt,
+    message: `Rollpkg Error: ${message}`,
+  });
+};
+
+export const invariant: (allGood: boolean, message: string) => void | never = (
+  allGood,
+  message,
+) => {
+  if (!allGood) {
+    logRollpkgError({
+      message,
+    });
+    throw EXIT_ON_ERROR;
   }
 };
 
