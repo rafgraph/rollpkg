@@ -69,6 +69,8 @@ export const createRollupConfig: CreateRollupConfig = ({
       tsconfigOverride: {
         compilerOptions: {
           types: [],
+          declaration: true,
+          sourceMap: true,
           rootDir: './src',
         },
         include: ['src', './node_modules/rollpkg/configs/types'],
