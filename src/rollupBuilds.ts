@@ -155,12 +155,18 @@ export const rollupWatch: RollupWatch = ({
   buildPlugins,
   outputPlugins,
 }) => {
-  process.on('SIGINT', function () {
+  // exit 0 from watch mode on ctrl-c (SIGINT) etc so can chain npm scripts: rollpkg watch && ...
+  // the ... will run after rollpkg watch only if it exits 0
+  const exitWatch = () => {
     clearLine();
     console.log('ROLLPKG WATCH END 👀👋', '\n');
     process.exit(0);
-  });
+  };
+  process.on('SIGINT', exitWatch);
+  process.on('SIGTERM', exitWatch);
+  process.on('SIGBREAK', exitWatch);
 
+  // in watch mode only create esm and cjs dev builds
   const watchOptions: RollupWatchOptions = {
     external: [...pkgJsonDependencies, ...pkgJsonPeerDependencies],
     input: entryFile,
@@ -357,6 +363,7 @@ if (process.env.NODE_ENV === 'production') {
       sourcemap: true,
       plugins: outputProdPlugins,
     }),
+
     fs.writeFile(
       resolve(process.cwd(), 'dist', `${kebabCasePkgName}.cjs.js`),
       cjsEntryContent,
