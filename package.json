@@ -11,6 +11,18 @@
     "lintStaged": "lint-staged",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "files": [
+    "configs",
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "rollup",
+    "typescript",
+    "npm",
+    "package",
+    "development"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rafgraph/rollpkg.git"
