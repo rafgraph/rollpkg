@@ -8,7 +8,7 @@ import {
 import {
   createRollupConfig,
   rollupWatch,
-  buildBundles,
+  createBundles,
   writeBundles,
 } from './rollupBuilds';
 import { progressEstimator, cleanDist } from './utils';
@@ -61,12 +61,12 @@ const rollpkg = async () => {
 
   const {
     watchMode,
+    entryFile,
     pkgJsonName,
-    pkgName,
-    input,
-    pkgSideEffects,
-    pkgDependencies,
-    pkgPeerDependencies,
+    kebabCasePkgName,
+    pkgJsonSideEffects,
+    pkgJsonDependencies,
+    pkgJsonPeerDependencies,
   } = await rollpkgConfiguration;
   /////////////////////////////////////
 
@@ -77,9 +77,9 @@ const rollpkg = async () => {
 
   try {
     rollupConfiguration = createRollupConfig({
-      pkgName,
-      pkgSideEffects,
-      pkgPeerDependencies,
+      kebabCasePkgName,
+      pkgJsonSideEffects,
+      pkgJsonPeerDependencies,
     });
     await progressEstimator(Promise.resolve(), rollupConfigurationMessage, {
       estimate: 0,
@@ -94,8 +94,8 @@ const rollpkg = async () => {
   }
 
   const {
-    pkgPeerDependencyGlobals,
-    pkgUmdName,
+    umdPeerDependencyGlobals,
+    umdNameForPkg,
     buildPlugins,
     prodBuildPlugins,
     outputPlugins,
@@ -108,10 +108,10 @@ const rollpkg = async () => {
   // rollup watch
   if (watchMode) {
     rollupWatch({
-      pkgName,
-      pkgDependencies,
-      pkgPeerDependencies,
-      input,
+      kebabCasePkgName,
+      pkgJsonDependencies,
+      pkgJsonPeerDependencies,
+      entryFile,
       treeshakeOptions,
       buildPlugins,
       outputPlugins,
@@ -126,10 +126,10 @@ const rollpkg = async () => {
   let bundles;
 
   try {
-    bundles = buildBundles({
-      input,
-      pkgDependencies,
-      pkgPeerDependencies,
+    bundles = createBundles({
+      entryFile,
+      pkgJsonDependencies,
+      pkgJsonPeerDependencies,
       treeshakeOptions,
       buildPlugins,
       prodBuildPlugins,
@@ -159,21 +159,20 @@ const rollpkg = async () => {
   /////////////////////////////////////
   // write rollup bundles
   const writeRollupBundlesMessage = `Writing builds for "${pkgJsonName}" esm, cjs, umd`;
-  let writtenBundles;
 
   try {
-    writtenBundles = writeBundles({
-      pkgName,
+    const output = writeBundles({
+      kebabCasePkgName,
       bundle,
       bundleProd,
       bundleUmd,
       bundleUmdProd,
       outputPlugins,
       outputProdPlugins,
-      pkgUmdName,
-      pkgPeerDependencyGlobals,
+      umdNameForPkg,
+      umdPeerDependencyGlobals,
     });
-    await progressEstimator(writtenBundles, writeRollupBundlesMessage, {
+    await progressEstimator(output, writeRollupBundlesMessage, {
       estimate: 1000,
     });
   } catch (error) {
@@ -214,6 +213,7 @@ const rollpkg = async () => {
   /////////////////////////////////////
 };
 
+// always exit 0 in watch mode so can chain in npm scripts: rollpkg watch && ...
 const exitCode = process.argv[2] === 'watch' ? 0 : 1;
 
 rollpkg().catch((error) => {

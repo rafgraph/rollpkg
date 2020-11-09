@@ -32,13 +32,13 @@ import { logTsError, logError } from './errorUtils';
 /////////////////////////////////////
 // create rollup config
 interface CreateRollupConfig {
-  (inputs: {
-    pkgName: string;
-    pkgSideEffects: boolean;
-    pkgPeerDependencies: string[];
+  (input: {
+    kebabCasePkgName: string;
+    pkgJsonSideEffects: boolean;
+    pkgJsonPeerDependencies: string[];
   }): {
-    pkgPeerDependencyGlobals: { [key: string]: string };
-    pkgUmdName: string;
+    umdPeerDependencyGlobals: { [key: string]: string };
+    umdNameForPkg: string;
     buildPlugins: Plugin[];
     prodBuildPlugins: Plugin[];
     outputPlugins: OutputPlugin[];
@@ -48,17 +48,17 @@ interface CreateRollupConfig {
 }
 
 export const createRollupConfig: CreateRollupConfig = ({
-  pkgName,
-  pkgSideEffects,
-  pkgPeerDependencies,
+  kebabCasePkgName,
+  pkgJsonSideEffects,
+  pkgJsonPeerDependencies,
 }) => {
-  const pkgPeerDependencyGlobals: { [key: string]: string } = {};
-  pkgPeerDependencies.forEach((peerDep) => {
-    pkgPeerDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
+  const umdPeerDependencyGlobals: { [key: string]: string } = {};
+  pkgJsonPeerDependencies.forEach((peerDep) => {
+    umdPeerDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
       convertPkgNameToKebabCase(peerDep),
     );
   });
-  const pkgUmdName = convertKebabCaseToPascalCase(pkgName);
+  const umdNameForPkg = convertKebabCaseToPascalCase(kebabCasePkgName);
 
   const buildPlugins: Plugin[] = [
     resolveRollup(),
@@ -91,7 +91,7 @@ export const createRollupConfig: CreateRollupConfig = ({
     invariantPlugin(),
   ];
 
-  if (pkgSideEffects === false)
+  if (pkgJsonSideEffects === false)
     buildPlugins.push(
       babel({
         babelHelpers: 'bundled',
@@ -114,15 +114,15 @@ export const createRollupConfig: CreateRollupConfig = ({
 
   const treeshakeOptions: TreeshakingOptions = {
     annotations: true,
-    moduleSideEffects: pkgSideEffects,
-    propertyReadSideEffects: pkgSideEffects,
-    tryCatchDeoptimization: pkgSideEffects,
-    unknownGlobalSideEffects: pkgSideEffects,
+    moduleSideEffects: pkgJsonSideEffects,
+    propertyReadSideEffects: pkgJsonSideEffects,
+    tryCatchDeoptimization: pkgJsonSideEffects,
+    unknownGlobalSideEffects: pkgJsonSideEffects,
   };
 
   return {
-    pkgPeerDependencyGlobals,
-    pkgUmdName,
+    umdPeerDependencyGlobals,
+    umdNameForPkg,
     buildPlugins,
     prodBuildPlugins,
     outputPlugins,
@@ -136,10 +136,10 @@ export const createRollupConfig: CreateRollupConfig = ({
 // rollup watch
 interface RollupWatch {
   (input: {
-    pkgName: string;
-    pkgDependencies: string[];
-    pkgPeerDependencies: string[];
-    input: string;
+    kebabCasePkgName: string;
+    pkgJsonDependencies: string[];
+    pkgJsonPeerDependencies: string[];
+    entryFile: string;
     treeshakeOptions: TreeshakingOptions;
     buildPlugins: Plugin[];
     outputPlugins: OutputPlugin[];
@@ -147,10 +147,10 @@ interface RollupWatch {
 }
 
 export const rollupWatch: RollupWatch = ({
-  pkgName,
-  pkgDependencies,
-  pkgPeerDependencies,
-  input,
+  kebabCasePkgName,
+  pkgJsonDependencies,
+  pkgJsonPeerDependencies,
+  entryFile,
   treeshakeOptions,
   buildPlugins,
   outputPlugins,
@@ -162,19 +162,19 @@ export const rollupWatch: RollupWatch = ({
   });
 
   const watchOptions: RollupWatchOptions = {
-    external: [...pkgDependencies, ...pkgPeerDependencies],
-    input,
+    external: [...pkgJsonDependencies, ...pkgJsonPeerDependencies],
+    input: entryFile,
     treeshake: treeshakeOptions,
     plugins: buildPlugins,
     output: [
       {
-        file: `dist/${pkgName}.esm.js`,
+        file: `dist/${kebabCasePkgName}.esm.js`,
         format: 'esm',
         sourcemap: true,
         plugins: outputPlugins,
       },
       {
-        file: `dist/${pkgName}.cjs.js`,
+        file: `dist/${kebabCasePkgName}.cjs.js`,
         format: 'cjs',
         sourcemap: true,
         plugins: outputPlugins,
@@ -225,21 +225,21 @@ export const rollupWatch: RollupWatch = ({
 
 /////////////////////////////////////
 // create rollup bundles
-interface BuildBundles {
+interface CreateBundles {
   (input: {
-    input: string;
-    pkgDependencies: string[];
-    pkgPeerDependencies: string[];
+    entryFile: string;
+    pkgJsonDependencies: string[];
+    pkgJsonPeerDependencies: string[];
     treeshakeOptions: TreeshakingOptions;
     buildPlugins: Plugin[];
     prodBuildPlugins: Plugin[];
   }): Promise<[RollupBuild, RollupBuild, RollupBuild, RollupBuild]>;
 }
 
-export const buildBundles: BuildBundles = ({
-  input,
-  pkgDependencies,
-  pkgPeerDependencies,
+export const createBundles: CreateBundles = ({
+  entryFile,
+  pkgJsonDependencies,
+  pkgJsonPeerDependencies,
   treeshakeOptions,
   buildPlugins,
   prodBuildPlugins,
@@ -247,32 +247,32 @@ export const buildBundles: BuildBundles = ({
   Promise.all([
     // esm and cjs development builds
     rollup({
-      external: [...pkgDependencies, ...pkgPeerDependencies],
-      input,
+      external: [...pkgJsonDependencies, ...pkgJsonPeerDependencies],
+      input: entryFile,
       treeshake: treeshakeOptions,
       plugins: buildPlugins,
     }),
 
     // cjs production build
     rollup({
-      external: [...pkgDependencies, ...pkgPeerDependencies],
-      input,
+      external: [...pkgJsonDependencies, ...pkgJsonPeerDependencies],
+      input: entryFile,
       treeshake: treeshakeOptions,
       plugins: prodBuildPlugins,
     }),
 
     // umd development build
     rollup({
-      external: [...pkgPeerDependencies],
-      input,
+      external: [...pkgJsonPeerDependencies],
+      input: entryFile,
       treeshake: treeshakeOptions,
       plugins: buildPlugins,
     }),
 
     // umd production build
     rollup({
-      external: [...pkgPeerDependencies],
-      input,
+      external: [...pkgJsonPeerDependencies],
+      input: entryFile,
       treeshake: treeshakeOptions,
       plugins: prodBuildPlugins,
     }),
@@ -283,82 +283,82 @@ export const buildBundles: BuildBundles = ({
 // write rollup bundles
 interface WriteBundles {
   (input: {
-    pkgName: string;
+    kebabCasePkgName: string;
     bundle: RollupBuild;
     bundleProd: RollupBuild;
     bundleUmd: RollupBuild;
     bundleUmdProd: RollupBuild;
     outputPlugins: OutputPlugin[];
     outputProdPlugins: OutputPlugin[];
-    pkgUmdName: string;
-    pkgPeerDependencyGlobals: { [key: string]: string };
+    umdNameForPkg: string;
+    umdPeerDependencyGlobals: { [key: string]: string };
   }): Promise<
     [RollupOutput, RollupOutput, RollupOutput, RollupOutput, RollupOutput, void]
   >;
 }
 
 export const writeBundles: WriteBundles = ({
-  pkgName,
+  kebabCasePkgName,
   bundle,
   bundleProd,
   bundleUmd,
   bundleUmdProd,
   outputPlugins,
   outputProdPlugins,
-  pkgUmdName,
-  pkgPeerDependencyGlobals,
+  umdNameForPkg,
+  umdPeerDependencyGlobals,
 }) => {
   // prettier-ignore
   const cjsEntryContent = 
 `'use strict';
 
 if (process.env.NODE_ENV === 'production') {
-  module.exports = require('./${pkgName}.cjs.production.js');
+  module.exports = require('./${kebabCasePkgName}.cjs.production.js');
 } else {
-  module.exports = require('./${pkgName}.cjs.development.js');
+  module.exports = require('./${kebabCasePkgName}.cjs.development.js');
 }`;
 
   return Promise.all([
     bundle.write({
-      file: `dist/${pkgName}.esm.js`,
+      file: `dist/${kebabCasePkgName}.esm.js`,
       format: 'esm',
       sourcemap: true,
       plugins: outputPlugins,
     }),
 
     bundle.write({
-      file: `dist/${pkgName}.cjs.development.js`,
+      file: `dist/${kebabCasePkgName}.cjs.development.js`,
       format: 'cjs',
       sourcemap: true,
       plugins: outputPlugins,
     }),
 
     bundleProd.write({
-      file: `dist/${pkgName}.cjs.production.js`,
+      file: `dist/${kebabCasePkgName}.cjs.production.js`,
       format: 'cjs',
       sourcemap: true,
       plugins: outputProdPlugins,
     }),
 
     bundleUmd.write({
-      file: `dist/${pkgName}.umd.development.js`,
+      file: `dist/${kebabCasePkgName}.umd.development.js`,
       format: 'umd',
-      name: pkgUmdName,
-      globals: pkgPeerDependencyGlobals,
+      name: umdNameForPkg,
+      globals: umdPeerDependencyGlobals,
       sourcemap: true,
       plugins: outputPlugins,
     }),
 
     bundleUmdProd.write({
-      file: `dist/${pkgName}.umd.production.js`,
+      file: `dist/${kebabCasePkgName}.umd.production.js`,
       format: 'umd',
-      name: pkgUmdName,
-      globals: pkgPeerDependencyGlobals,
+      name: umdNameForPkg,
+      globals: umdPeerDependencyGlobals,
       sourcemap: true,
       plugins: outputProdPlugins,
     }),
     fs.writeFile(
-      resolve(process.cwd(), 'dist', `${pkgName}.cjs.js`),
+      resolve(process.cwd(), 'dist', `${kebabCasePkgName}.cjs.js`),
       cjsEntryContent,
       'utf8',
     ),

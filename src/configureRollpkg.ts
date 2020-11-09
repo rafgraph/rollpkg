@@ -6,15 +6,15 @@ import { fileExists, convertPkgNameToKebabCase } from './utils';
 import { invariant } from './errorUtils';
 
 interface ConfigureRollpkg {
-  (options: { args: string[]; cwd: string }): Promise<
+  (input: { args: string[]; cwd: string }): Promise<
     | {
         watchMode: boolean;
         pkgJsonName: string;
-        pkgName: string;
-        input: string;
-        pkgSideEffects: boolean;
-        pkgDependencies: string[];
-        pkgPeerDependencies: string[];
+        kebabCasePkgName: string;
+        entryFile: string;
+        pkgJsonSideEffects: boolean;
+        pkgJsonDependencies: string[];
+        pkgJsonPeerDependencies: string[];
       }
     | never
   >;
@@ -47,10 +47,10 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   // type cast as string because previous invariant check makes this code
   // unreachable if pkgJson.name is not a string, which TS doesn't understand
   const pkgJsonName = pkgJson.name as string;
-  const pkgName = convertPkgNameToKebabCase(pkgJsonName);
+  const kebabCasePkgName = convertPkgNameToKebabCase(pkgJsonName);
 
-  const mainShouldBe = `dist/${pkgName}.cjs.js`;
-  const moduleShouldBe = `dist/${pkgName}.esm.js`;
+  const mainShouldBe = `dist/${kebabCasePkgName}.cjs.js`;
+  const moduleShouldBe = `dist/${kebabCasePkgName}.esm.js`;
   const typesShouldBe = `dist/index.d.ts`;
   invariant(
     pkgJson.main === mainShouldBe,
@@ -70,7 +70,7 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   );
   // type cast as boolean because previous invariant check makes this code
   // unreachable if pkgJson.name is not a string, which TS doesn't understand
-  const pkgSideEffects = pkgJson.sideEffects as boolean;
+  const pkgJsonSideEffects = pkgJson.sideEffects as boolean;
 
   try {
     await fs.readFile(resolve(cwd, 'tsconfig.json'), 'utf8');
@@ -93,22 +93,22 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
     `Cannot find index.ts or index.tsx entry file in ${srcDir}`,
   );
 
-  const input = resolve(srcDir, indexTsExists ? 'index.ts' : 'index.tsx');
+  const entryFile = resolve(srcDir, indexTsExists ? 'index.ts' : 'index.tsx');
 
-  const pkgDependencies = pkgJson.dependencies
+  const pkgJsonDependencies = pkgJson.dependencies
     ? Object.keys(pkgJson.dependencies)
     : [];
-  const pkgPeerDependencies = pkgJson.peerDependencies
+  const pkgJsonPeerDependencies = pkgJson.peerDependencies
     ? Object.keys(pkgJson.peerDependencies)
     : [];
 
   return {
     watchMode,
     pkgJsonName,
-    pkgName,
-    input,
-    pkgSideEffects,
-    pkgDependencies,
-    pkgPeerDependencies,
+    kebabCasePkgName,
+    entryFile,
+    pkgJsonSideEffects,
+    pkgJsonDependencies,
+    pkgJsonPeerDependencies,
   };
 };
