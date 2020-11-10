@@ -122,7 +122,7 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // create rollup bundles
-  const createRollupBundlesMessage = `Creating builds for "${pkgJsonName}" esm, cjs, umd`;
+  const createRollupBundlesMessage = 'Creating esm, cjs, umd builds';
   let bundles;
 
   try {
@@ -134,7 +134,9 @@ const rollpkg = async () => {
       buildPlugins,
       prodBuildPlugins,
     });
-    await progressEstimator(bundles, createRollupBundlesMessage);
+    await progressEstimator(bundles, createRollupBundlesMessage, {
+      id: `${pkgJsonName}-${createRollupBundlesMessage}`,
+    });
   } catch (error) {
     const errorAsObject = errorAsObjectWithMessage(error);
     // rpt2 is the rollup typescript plugin
@@ -158,7 +160,7 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // write rollup bundles
-  const writeRollupBundlesMessage = `Writing builds for "${pkgJsonName}" esm, cjs, umd`;
+  const writeRollupBundlesMessage = 'Writing esm, cjs, umd builds';
 
   try {
     const output = writeBundles({
@@ -173,6 +175,7 @@ const rollpkg = async () => {
       umdPeerDependencyGlobals,
     });
     await progressEstimator(output, writeRollupBundlesMessage, {
+      id: `${pkgJsonName}-${writeRollupBundlesMessage}`,
       estimate: 1000,
     });
   } catch (error) {
@@ -194,12 +197,14 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // calculate bundlephobia package stats
-  const bundlephobiaStatsMessage = `Calculating Bundlephobia stats for "${pkgJsonName}"`;
+  const bundlephobiaStatsMessage = 'Calculating Bundlephobia stats';
 
   try {
     const packageStats = calculateBundlephobiaStats({ cwd });
 
-    await progressEstimator(packageStats, bundlephobiaStatsMessage);
+    await progressEstimator(packageStats, bundlephobiaStatsMessage, {
+      id: `${pkgJsonName}-${bundlephobiaStatsMessage}`,
+    });
 
     printBundlephobiaStats(await packageStats);
   } catch (error) {
