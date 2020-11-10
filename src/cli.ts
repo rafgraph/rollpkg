@@ -135,7 +135,7 @@ const rollpkg = async () => {
       prodBuildPlugins,
     });
     await progressEstimator(bundles, createRollupBundlesMessage, {
-      id: `${pkgJsonName}-${createRollupBundlesMessage}`,
+      id: `${kebabCasePkgName}-${createRollupBundlesMessage}`,
     });
   } catch (error) {
     const errorAsObject = errorAsObjectWithMessage(error);
@@ -175,7 +175,7 @@ const rollpkg = async () => {
       umdPeerDependencyGlobals,
     });
     await progressEstimator(output, writeRollupBundlesMessage, {
-      id: `${pkgJsonName}-${writeRollupBundlesMessage}`,
+      id: `${kebabCasePkgName}-${writeRollupBundlesMessage}`,
       estimate: 1000,
     });
   } catch (error) {
@@ -203,7 +203,7 @@ const rollpkg = async () => {
     const packageStats = calculateBundlephobiaStats({ cwd });
 
     await progressEstimator(packageStats, bundlephobiaStatsMessage, {
-      id: `${pkgJsonName}-${bundlephobiaStatsMessage}`,
+      id: `${kebabCasePkgName}-${bundlephobiaStatsMessage}`,
     });
 
     printBundlephobiaStats(await packageStats);

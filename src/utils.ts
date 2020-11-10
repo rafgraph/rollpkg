@@ -24,7 +24,7 @@ export const clearLine: () => void = () => {
 };
 
 export const convertPkgNameToKebabCase = (pkgName: string): string =>
-  pkgName.replace(/@/g, '').replace(/\//g, '-');
+  pkgName.replace(/[@!]/g, '').replace(/\//g, '-');
 
 export const convertKebabCaseToPascalCase = (kebabCase: string): string =>
   kebabCase

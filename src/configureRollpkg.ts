@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import * as fs from 'fs-extra';
+import validateNpmPackageName from 'validate-npm-package-name';
 import { PackageJson } from 'type-fest';
 
 import { fileExists, convertPkgNameToKebabCase } from './utils';
@@ -47,6 +48,19 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   // type cast as string because previous invariant check makes this code
   // unreachable if pkgJson.name is not a string, which TS doesn't understand
   const pkgJsonName = pkgJson.name as string;
+
+  const isValidName = validateNpmPackageName(pkgJsonName);
+  invariant(
+    isValidName.validForNewPackages,
+    `Invalid npm package name, see https://www.npmjs.com/package/validate-npm-package-name\n${
+      isValidName.errors?.length
+        ? isValidName.errors
+            ?.map((npmError) => `Npm Error: ${npmError}`)
+            .join('\n')
+        : ''
+    }`,
+  );
+
   const kebabCasePkgName = convertPkgNameToKebabCase(pkgJsonName);
 
   const mainShouldBe = `dist/${kebabCasePkgName}.cjs.js`;

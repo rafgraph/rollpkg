@@ -59,12 +59,14 @@
     "rollup-plugin-invariant": "^0.6.1",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.29.0",
-    "typescript": "^4.0.5"
+    "typescript": "^4.0.5",
+    "validate-npm-package-name": "^3.0.0"
   },
   "devDependencies": {
     "@types/babel__core": "^7.1.12",
     "@types/fs-extra": "^9.0.3",
     "@types/node": "^14.14.6",
+    "@types/validate-npm-package-name": "^3.0.0",
     "lint-staged": "^10.5.1",
     "pre-commit": "^1.2.2",
     "type-fest": "^0.18.0"
