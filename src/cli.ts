@@ -26,7 +26,7 @@ const rollpkg = async () => {
   const cleanDistMessage = 'Cleaning dist folder';
   try {
     const clean = cleanDist();
-    await progressEstimator(clean, cleanDistMessage, { estimate: 10 });
+    await progressEstimator(clean, cleanDistMessage);
   } catch (error) {
     logError({
       failedAt: cleanDistMessage,
@@ -49,7 +49,6 @@ const rollpkg = async () => {
     await progressEstimator(
       rollpkgConfiguration,
       invariantsAndConfigurationMessage,
-      { estimate: 10 },
     );
   } catch (error) {
     logRollpkgError({
@@ -62,11 +61,12 @@ const rollpkg = async () => {
   const {
     watchMode,
     entryFile,
-    pkgJsonName,
     kebabCasePkgName,
     pkgJsonSideEffects,
-    pkgJsonDependencies,
-    pkgJsonPeerDependencies,
+    pkgJsonDependencyKeys,
+    pkgJsonPeerDependencyKeys,
+    pkgJsonUmdName,
+    pkgJsonUmdGlobalDependencies,
   } = await rollpkgConfiguration;
   /////////////////////////////////////
 
@@ -79,11 +79,11 @@ const rollpkg = async () => {
     rollupConfiguration = createRollupConfig({
       kebabCasePkgName,
       pkgJsonSideEffects,
-      pkgJsonPeerDependencies,
+      pkgJsonPeerDependencyKeys,
+      pkgJsonUmdName,
+      pkgJsonUmdGlobalDependencies,
     });
-    await progressEstimator(Promise.resolve(), rollupConfigurationMessage, {
-      estimate: 0,
-    });
+    await progressEstimator(Promise.resolve(), rollupConfigurationMessage);
   } catch (error) {
     logError({
       failedAt: rollupConfigurationMessage,
@@ -94,13 +94,14 @@ const rollpkg = async () => {
   }
 
   const {
-    umdPeerDependencyGlobals,
-    umdNameForPkg,
     buildPlugins,
     prodBuildPlugins,
     outputPlugins,
     outputProdPlugins,
     treeshakeOptions,
+    umdNameForPkg,
+    umdExternalDependencies,
+    umdDependencyGlobals,
   } = rollupConfiguration;
   /////////////////////////////////////
 
@@ -109,8 +110,8 @@ const rollpkg = async () => {
   if (watchMode) {
     rollupWatch({
       kebabCasePkgName,
-      pkgJsonDependencies,
-      pkgJsonPeerDependencies,
+      pkgJsonDependencyKeys,
+      pkgJsonPeerDependencyKeys,
       entryFile,
       treeshakeOptions,
       buildPlugins,
@@ -128,8 +129,9 @@ const rollpkg = async () => {
   try {
     bundles = createBundles({
       entryFile,
-      pkgJsonDependencies,
-      pkgJsonPeerDependencies,
+      pkgJsonDependencyKeys,
+      pkgJsonPeerDependencyKeys,
+      umdExternalDependencies,
       treeshakeOptions,
       buildPlugins,
       prodBuildPlugins,
@@ -172,11 +174,10 @@ const rollpkg = async () => {
       outputPlugins,
       outputProdPlugins,
       umdNameForPkg,
-      umdPeerDependencyGlobals,
+      umdDependencyGlobals,
     });
     await progressEstimator(output, writeRollupBundlesMessage, {
       id: `${kebabCasePkgName}-${writeRollupBundlesMessage}`,
-      estimate: 1000,
     });
   } catch (error) {
     logError({
@@ -190,9 +191,7 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // rollpkg build success!
-  await progressEstimator(Promise.resolve(), 'ROLLPKG BUILD SUCCESS 😁😘', {
-    estimate: 0,
-  });
+  await progressEstimator(Promise.resolve(), 'ROLLPKG BUILD SUCCESS 😁😘');
   /////////////////////////////////////
 
   /////////////////////////////////////

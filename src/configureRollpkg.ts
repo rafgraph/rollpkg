@@ -14,8 +14,10 @@ interface ConfigureRollpkg {
         kebabCasePkgName: string;
         entryFile: string;
         pkgJsonSideEffects: boolean;
-        pkgJsonDependencies: string[];
-        pkgJsonPeerDependencies: string[];
+        pkgJsonDependencyKeys: string[];
+        pkgJsonPeerDependencyKeys: string[];
+        pkgJsonUmdName?: string;
+        pkgJsonUmdGlobalDependencies?: { [key: string]: string };
       }
     | never
   >;
@@ -34,7 +36,12 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
 
   const watchMode = args[0] === 'watch';
 
-  let pkgJson: PackageJson;
+  interface PkgJson extends PackageJson {
+    umdName?: string;
+    umdGlobalDependencies?: { [key: string]: string };
+  }
+  let pkgJson: PkgJson;
+
   try {
     const readPkgJson = await fs.readFile(resolve(cwd, 'package.json'), 'utf8');
     pkgJson = JSON.parse(readPkgJson) as PackageJson;
@@ -109,12 +116,29 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
 
   const entryFile = resolve(srcDir, indexTsExists ? 'index.ts' : 'index.tsx');
 
-  const pkgJsonDependencies = pkgJson.dependencies
+  const pkgJsonDependencyKeys = pkgJson.dependencies
     ? Object.keys(pkgJson.dependencies)
     : [];
-  const pkgJsonPeerDependencies = pkgJson.peerDependencies
+  const pkgJsonPeerDependencyKeys = pkgJson.peerDependencies
     ? Object.keys(pkgJson.peerDependencies)
     : [];
+
+  invariant(
+    !pkgJson.umdName || typeof pkgJson.umdName === 'string',
+    `If "umdName" is specified in package.json, it needs to be string, value found: ${pkgJson.umdName}`,
+  );
+  const pkgJsonUmdName = pkgJson.umdName;
+
+  invariant(
+    !pkgJson.umdGlobalDependencies ||
+      (typeof pkgJson.umdGlobalDependencies === 'object' &&
+        !Array.isArray(pkgJson.umdGlobalDependencies) &&
+        Object.values(pkgJson.umdGlobalDependencies).every(
+          (value) => typeof value === 'string',
+        )),
+    'If "umdGlobalDependencies" is specified in package.json, it needs to be an object of the form { "moduleId": "globalName" }, for example { "lodash": "_" }',
+  );
+  const pkgJsonUmdGlobalDependencies = pkgJson.umdGlobalDependencies;
 
   return {
     watchMode,
@@ -122,7 +146,9 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
     kebabCasePkgName,
     entryFile,
     pkgJsonSideEffects,
-    pkgJsonDependencies,
-    pkgJsonPeerDependencies,
+    pkgJsonDependencyKeys,
+    pkgJsonPeerDependencyKeys,
+    pkgJsonUmdName,
+    pkgJsonUmdGlobalDependencies,
   };
 };
