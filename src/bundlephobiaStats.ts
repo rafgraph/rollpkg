@@ -1,4 +1,6 @@
 import { getPackageStats } from 'package-build-stats';
+import prettyBytes from 'pretty-bytes';
+import chalk from 'chalk';
 import { PromiseValue } from 'type-fest'; // TODO use Awaited<..> when TypeScript v4.1 is released
 
 /////////////////////////////////////
@@ -64,7 +66,40 @@ interface PrintBundlephobiaStats {
 export const printBundlephobiaStats: PrintBundlephobiaStats = (
   packageStats,
 ) => {
-  console.log(`\nMinified size: ${packageStats.size}`);
-  console.log(`Minified and gzipped size: ${packageStats.gzip}`);
+  // hex #00de6d is to match color used by progress estimator for ✓
+  // https://github.com/bvaughn/progress-estimator/blob/master/src/theme.js#L18
+  const logLine = (text: string, emptyLineAbove?: boolean) => {
+    console.log(
+      `${emptyLineAbove ? '\n' : ''}${chalk.hex('#00de6d')('➜')} ${text}`,
+    );
+  };
+
+  logLine(`Minified size: ${chalk.bold(prettyBytes(packageStats.size))}`, true);
+  logLine(
+    `Minified and gzipped size: ${chalk.bold(prettyBytes(packageStats.gzip))}`,
+  );
+
+  if (Array.isArray(packageStats.dependencySizes)) {
+    const totalDependencySizes = packageStats.dependencySizes.reduce(
+      (total, value) => {
+        return total + value.approximateSize;
+      },
+      0,
+    );
+
+    const sortedDependencies = packageStats.dependencySizes.sort(
+      (a, b) => b.approximateSize - a.approximateSize,
+    );
+
+    sortedDependencies.forEach((dependency) => {
+      const dependencyPercent =
+        (dependency.approximateSize / totalDependencySizes) * 100;
+      const roundedDependencyPercent =
+        dependencyPercent === 100
+          ? dependencyPercent
+          : dependencyPercent.toFixed(1);
+      logLine(`${roundedDependencyPercent}% ${dependency.name}`);
+    });
+  }
 };
 /////////////////////////////////////

@@ -187,7 +187,7 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // rollpkg build success!
-  await progressEstimator(Promise.resolve(), 'ROLLPKG BUILD SUCCESSFUL 😁😘', {
+  await progressEstimator(Promise.resolve(), 'ROLLPKG BUILD SUCCESS 😁😘', {
     estimate: 0,
   });
   /////////////////////////////////////
