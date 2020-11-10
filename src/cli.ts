@@ -218,16 +218,19 @@ const rollpkg = async () => {
 };
 
 // always exit 0 in watch mode so can chain in npm scripts: rollpkg watch && ...
-const exitCode = process.argv[2] === 'watch' ? 0 : 1;
+const errorExitCode = process.argv[2] === 'watch' ? 0 : 1;
 
 rollpkg().catch((error) => {
   if (error === EXIT_ON_ERROR) {
-    // only clean dist if it's a known error
-    cleanDist().finally(() => {
-      process.exit(exitCode);
-    });
+    // known error, it has already been logged so just clean dist and exit
+    cleanDist()
+      .catch()
+      .finally(() => {
+        process.exit(errorExitCode);
+      });
   } else {
-    // unknown error, throw it and leave dist as it is
-    throw error;
+    // unknown error, so just log and exit (leave dist as it is to help with debugging)
+    logError({ message: 'Rollpkg UNKNOWN ERROR', fullError: error });
+    process.exit(errorExitCode);
   }
 });
