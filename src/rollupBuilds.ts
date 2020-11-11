@@ -306,6 +306,7 @@ export const createBundles: CreateBundles = ({
 // write rollup bundles
 interface WriteBundles {
   (input: {
+    cwd: string;
     kebabCasePkgName: string;
     bundle: RollupBuild;
     bundleProd: RollupBuild;
@@ -321,6 +322,7 @@ interface WriteBundles {
 }
 
 export const writeBundles: WriteBundles = ({
+  cwd,
   kebabCasePkgName,
   bundle,
   bundleProd,
@@ -382,7 +384,7 @@ if (process.env.NODE_ENV === 'production') {
     }),
 
     fs.writeFile(
-      resolve(process.cwd(), 'dist', `${kebabCasePkgName}.cjs.js`),
+      resolve(cwd, 'dist', `${kebabCasePkgName}.cjs.js`),
       cjsEntryContent,
       'utf8',
     ),

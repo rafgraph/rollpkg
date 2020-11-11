@@ -166,6 +166,7 @@ const rollpkg = async () => {
 
   try {
     const output = writeBundles({
+      cwd,
       kebabCasePkgName,
       bundle,
       bundleProd,
