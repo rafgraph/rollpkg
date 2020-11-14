@@ -1,6 +1,6 @@
 declare var process: {
   env: {
-    [key: string]: string | undefined;
+    NODE_ENV?: string;
   };
 };
 

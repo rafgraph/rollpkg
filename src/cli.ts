@@ -94,7 +94,8 @@ const rollpkg = async () => {
   }
 
   const {
-    buildPlugins,
+    esmBuildPlugins,
+    devBuildPlugins,
     prodBuildPlugins,
     outputPlugins,
     outputProdPlugins,
@@ -114,7 +115,8 @@ const rollpkg = async () => {
       pkgJsonPeerDependencyKeys,
       entryFile,
       treeshakeOptions,
-      buildPlugins,
+      esmBuildPlugins,
+      devBuildPlugins,
       outputPlugins,
     });
     return;
@@ -133,7 +135,8 @@ const rollpkg = async () => {
       pkgJsonPeerDependencyKeys,
       umdExternalDependencies,
       treeshakeOptions,
-      buildPlugins,
+      esmBuildPlugins,
+      devBuildPlugins,
       prodBuildPlugins,
     });
     await progressEstimator(bundles, createRollupBundlesMessage, {
@@ -157,7 +160,13 @@ const rollpkg = async () => {
     throw EXIT_ON_ERROR;
   }
 
-  const [bundle, bundleProd, bundleUmd, bundleUmdProd] = await bundles;
+  const [
+    bundleEsm,
+    bundleCjsDev,
+    bundleCjsProd,
+    bundleUmdDev,
+    bundleUmdProd,
+  ] = await bundles;
   /////////////////////////////////////
 
   /////////////////////////////////////
@@ -168,9 +177,10 @@ const rollpkg = async () => {
     const output = writeBundles({
       cwd,
       kebabCasePkgName,
-      bundle,
-      bundleProd,
-      bundleUmd,
+      bundleEsm,
+      bundleCjsDev,
+      bundleCjsProd,
+      bundleUmdDev,
       bundleUmdProd,
       outputPlugins,
       outputProdPlugins,
