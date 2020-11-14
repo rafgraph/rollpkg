@@ -26,10 +26,17 @@ module.exports = {
     'prettier/@typescript-eslint',
     'prettier/react',
   ],
+  settings: {
+    react: {
+      // to indicate latest version
+      // https://github.com/yannickcr/eslint-plugin-react/blob/b8e91a571bc6b58cc3c78e9e62e8b60ecb45e233/lib/util/version.js#L48
+      version: '999.999.999',
+    },
+  },
   rules: {
     // see for rational https://basarat.gitbook.io/typescript/main-1/defaultisbad
     'import/no-default-export': 'error',
-    '@typescript-eslint/restrict-template-expressions': 'off'
+    '@typescript-eslint/restrict-template-expressions': 'off',
   },
   overrides: [
     {
