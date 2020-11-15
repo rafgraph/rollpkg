@@ -16,6 +16,7 @@ import json from '@rollup/plugin-json';
 import rollupTypescript from 'rollup-plugin-typescript2';
 import replace from '@rollup/plugin-replace';
 import invariantPlugin from 'rollup-plugin-invariant';
+import sourcemaps from 'rollup-plugin-sourcemaps';
 import { terser } from 'rollup-plugin-terser';
 // babel only used to add /*#__PURE__*/ annotations for function calls using babel-plugin-annotate-pure-calls
 import babel from '@rollup/plugin-babel';
@@ -112,6 +113,7 @@ export const createRollupConfig: CreateRollupConfig = ({
       },
       include: ['**/*.ts+(|x)', '**/*.js+(|x)'],
     }),
+    sourcemaps(),
     replace({ __DEV__: "process.env.NODE_ENV !== 'production'" }),
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore invariantPlugin is missing name, this isn't causing an actual error AFAIK, remove when pr is released: https://github.com/apollographql/invariant-packages/pull/45
@@ -144,7 +146,9 @@ export const createRollupConfig: CreateRollupConfig = ({
 
   const outputPlugins: OutputPlugin[] = [];
 
-  const outputProdPlugins: OutputPlugin[] = [terser()];
+  const outputProdPlugins: OutputPlugin[] = [
+    terser({ format: { comments: false } }),
+  ];
 
   const treeshakeOptions: TreeshakingOptions = {
     annotations: true,
