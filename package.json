@@ -14,8 +14,7 @@
   },
   "files": [
     "configs",
-    "dist",
-    "src"
+    "dist"
   ],
   "keywords": [
     "rollup",

@@ -6,7 +6,8 @@
     "module": "CommonJS",
     "allowJs": false,
     "outDir": "dist",
-    "noEmit": false
+    "noEmit": false,
+    "inlineSources": true
   },
   "include": ["src"]
 }
