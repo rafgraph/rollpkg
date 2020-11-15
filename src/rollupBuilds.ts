@@ -37,7 +37,6 @@ interface CreateRollupConfig {
     kebabCasePkgName: string;
     pkgJsonSideEffects: boolean;
     pkgJsonPeerDependencyKeys: string[];
-    pkgJsonUmdName?: string;
     pkgJsonUmdGlobalDependencies?: { [key: string]: string };
   }): {
     esmBuildPlugins: Plugin[];
@@ -56,7 +55,6 @@ export const createRollupConfig: CreateRollupConfig = ({
   kebabCasePkgName,
   pkgJsonSideEffects,
   pkgJsonPeerDependencyKeys,
-  pkgJsonUmdName,
   pkgJsonUmdGlobalDependencies,
 }) => {
   const umdExternalDependencies = pkgJsonUmdGlobalDependencies
@@ -73,8 +71,7 @@ export const createRollupConfig: CreateRollupConfig = ({
       );
     });
   }
-  const umdNameForPkg =
-    pkgJsonUmdName || convertKebabCaseToPascalCase(kebabCasePkgName);
+  const umdNameForPkg = convertKebabCaseToPascalCase(kebabCasePkgName);
 
   const buildPlugins: Plugin[] = [
     resolveRollup(),

@@ -65,7 +65,6 @@ const rollpkg = async () => {
     pkgJsonSideEffects,
     pkgJsonDependencyKeys,
     pkgJsonPeerDependencyKeys,
-    pkgJsonUmdName,
     pkgJsonUmdGlobalDependencies,
   } = await rollpkgConfiguration;
   /////////////////////////////////////
@@ -80,7 +79,6 @@ const rollpkg = async () => {
       kebabCasePkgName,
       pkgJsonSideEffects,
       pkgJsonPeerDependencyKeys,
-      pkgJsonUmdName,
       pkgJsonUmdGlobalDependencies,
     });
     await progressEstimator(Promise.resolve(), rollupConfigurationMessage);

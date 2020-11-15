@@ -16,7 +16,6 @@ interface ConfigureRollpkg {
         pkgJsonSideEffects: boolean;
         pkgJsonDependencyKeys: string[];
         pkgJsonPeerDependencyKeys: string[];
-        pkgJsonUmdName?: string;
         pkgJsonUmdGlobalDependencies?: { [key: string]: string };
       }
     | never
@@ -37,7 +36,6 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   const watchMode = args[0] === 'watch';
 
   interface PkgJson extends PackageJson {
-    umdName?: string;
     umdGlobalDependencies?: { [key: string]: string };
   }
   let pkgJson: PkgJson;
@@ -124,19 +122,13 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
     : [];
 
   invariant(
-    !pkgJson.umdName || typeof pkgJson.umdName === 'string',
-    `If "umdName" is specified in package.json, it needs to be string, value found: ${pkgJson.umdName}`,
-  );
-  const pkgJsonUmdName = pkgJson.umdName;
-
-  invariant(
     !pkgJson.umdGlobalDependencies ||
       (typeof pkgJson.umdGlobalDependencies === 'object' &&
         !Array.isArray(pkgJson.umdGlobalDependencies) &&
         Object.values(pkgJson.umdGlobalDependencies).every(
           (value) => typeof value === 'string',
         )),
-    'If "umdGlobalDependencies" is specified in package.json, it needs to be an object of the form { "moduleId": "globalName" }, for example { "lodash": "_" }',
+    'If "umdGlobalDependencies" is specified in package.json, it needs to be an object of the form { "package-name": "GlobalName" }, for example { "react-dom": "ReactDOM" }',
   );
   const pkgJsonUmdGlobalDependencies = pkgJson.umdGlobalDependencies;
 
@@ -148,7 +140,6 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
     pkgJsonSideEffects,
     pkgJsonDependencyKeys,
     pkgJsonPeerDependencyKeys,
-    pkgJsonUmdName,
     pkgJsonUmdGlobalDependencies,
   };
 };
