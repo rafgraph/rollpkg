@@ -89,7 +89,10 @@ export const createRollupConfig: CreateRollupConfig = ({
           module: 'esnext',
           // always generate *.d.ts files
           declaration: true,
-          // always generate source maps
+          // always generate source maps which are used by rollup to create the actual source map
+          // without this rollup creates blank source maps
+          // note that the tsconfig "inlineSources" option has no effect on how rollup generates source maps
+          // as rollup has it's own inline sources option, "sourcemapExcludeSources" which defaults to false
           sourceMap: true,
           // enforces convention that all files to be included in the build are in the src directory
           // this doesn't prevent other non-build files like *.mock.ts from being outside the src directory
@@ -390,7 +393,9 @@ if (process.env.NODE_ENV === 'production') {
     bundleEsm.write({
       file: `dist/${kebabCasePkgName}.esm.js`,
       format: 'esm',
+      compact: true,
       sourcemap: true,
+      sourcemapExcludeSources: false,
       plugins: outputPlugins,
     }),
 
@@ -398,13 +403,16 @@ if (process.env.NODE_ENV === 'production') {
       file: `dist/${kebabCasePkgName}.cjs.development.js`,
       format: 'cjs',
       sourcemap: true,
+      sourcemapExcludeSources: false,
       plugins: outputPlugins,
     }),
 
     bundleCjsProd.write({
       file: `dist/${kebabCasePkgName}.cjs.production.js`,
       format: 'cjs',
+      compact: true,
       sourcemap: true,
+      sourcemapExcludeSources: false,
       plugins: outputProdPlugins,
     }),
 
@@ -414,15 +422,18 @@ if (process.env.NODE_ENV === 'production') {
       name: umdNameForPkg,
       globals: umdDependencyGlobals,
       sourcemap: true,
+      sourcemapExcludeSources: false,
       plugins: outputPlugins,
     }),
 
     bundleUmdProd.write({
       file: `dist/${kebabCasePkgName}.umd.production.js`,
       format: 'umd',
+      compact: true,
       name: umdNameForPkg,
       globals: umdDependencyGlobals,
       sourcemap: true,
+      sourcemapExcludeSources: false,
       plugins: outputProdPlugins,
     }),
 
