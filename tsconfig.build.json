@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "dist",
+    "noEmit": false,
+    "declaration": true,
+    "sourceMap": true,
+    "inlineSources": true
+  },
+  "exclude": [
+    "**/__tests__",
+    "**/__mocks__",
+    "**/__snapshots__",
+    "**/*.test.*",
+    "**/*.mock.*"
+  ]
+}

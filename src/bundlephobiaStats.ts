@@ -8,7 +8,7 @@ import { PromiseValue } from 'type-fest'; // TODO use Awaited<..> when TypeScrip
 // note using partial doesn't seem to work because of constructor: type ConsoleFunctions = Partial<Console>
 type ConsoleFunctions = { [key in keyof Console]?: unknown };
 
-export const silenceConsole: () => ConsoleFunctions = () => {
+const silenceConsole: () => ConsoleFunctions = () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const noop = () => {};
   const consoleFunctions: ConsoleFunctions = {};
@@ -24,7 +24,7 @@ export const silenceConsole: () => ConsoleFunctions = () => {
   return consoleFunctions;
 };
 
-export const reinstateConsole: (consoleFunctions: ConsoleFunctions) => void = (
+const reinstateConsole: (consoleFunctions: ConsoleFunctions) => void = (
   consoleFunctions,
 ) => {
   Object.entries(consoleFunctions).forEach(([key, func]) => {

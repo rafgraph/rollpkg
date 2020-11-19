@@ -6,11 +6,14 @@
     "rollpkg": "dist/cli.js"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc && chmod +x dist/cli.js",
-    "watch": "npm run build && tsc --watch",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json && chmod +x dist/cli.js",
+    "watch": "npm run build && tsc --project tsconfig.build.json --watch",
     "prepublishOnly": "npm run lint && npm run build",
     "lint": "eslint src",
-    "lintStaged": "lint-staged"
+    "lintStaged": "lint-staged",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "coverage": "npx live-server coverage/lcov-report"
   },
   "files": [
     "configs",
@@ -94,5 +97,9 @@
       "configs",
       "jest-preset.js"
     ]
+  },
+  "jest": {
+    "preset": "./configs/jest-preset.js",
+    "testEnvironment": "node"
   }
 }
