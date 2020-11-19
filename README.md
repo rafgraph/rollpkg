@@ -175,7 +175,7 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
     "extends": ["./node_modules/rollpkg/configs/eslint"]
   },
   "jest": {
-    "preset": "rollpkg/configs/jest"
+    "preset": "rollpkg"
   }
 }
 ```
@@ -240,11 +240,11 @@ It is also recommended to add a `lint` script to `package.json` (the `eslint src
 
 ### Jest config
 
-If you want to use [Jest](https://jestjs.io/) (recommended) you can use the [preset provided by Rollpkg](TODO). The preset uses [`ts-jest`](https://github.com/kulshekhar/ts-jest) for a seamless and fully typed checked TypeScript testing experience. There is no need to install Jest as it is included with Rollpkg. In `package.json` add:
+If you want to use [Jest](https://jestjs.io/) (recommended) you can use the [preset provided by Rollpkg](https://github.com/rafgraph/rollpkg/blob/main/configs/jest-preset.js). The preset uses [`ts-jest`](https://github.com/kulshekhar/ts-jest) for a seamless and fully typed checked TypeScript testing experience. There is no need to install Jest as it is included with Rollpkg. In `package.json` add:
 
 ```
 "jest": {
-  "preset": "rollpkg/configs/jest"
+  "preset": "rollpkg"
 }
 ```
 
