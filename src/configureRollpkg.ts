@@ -91,6 +91,24 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   // unreachable if pkgJson.name is not a string, which TS doesn't understand
   const pkgJsonSideEffects = pkgJson.sideEffects as boolean;
 
+  const pkgJsonDependencyKeys = pkgJson.dependencies
+    ? Object.keys(pkgJson.dependencies)
+    : [];
+  const pkgJsonPeerDependencyKeys = pkgJson.peerDependencies
+    ? Object.keys(pkgJson.peerDependencies)
+    : [];
+
+  invariant(
+    !pkgJson.umdGlobalDependencies ||
+      (typeof pkgJson.umdGlobalDependencies === 'object' &&
+        !Array.isArray(pkgJson.umdGlobalDependencies) &&
+        Object.values(pkgJson.umdGlobalDependencies).every(
+          (value) => typeof value === 'string',
+        )),
+    'If "umdGlobalDependencies" is specified in package.json, it needs to be an object of the form { "package-name": "GlobalName" }, for example { "react-dom": "ReactDOM" }',
+  );
+  const pkgJsonUmdGlobalDependencies = pkgJson.umdGlobalDependencies;
+
   try {
     await fs.readFile(resolve(cwd, 'tsconfig.json'), 'utf8');
   } catch (e) {
@@ -113,24 +131,6 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   );
 
   const entryFile = resolve(srcDir, indexTsExists ? 'index.ts' : 'index.tsx');
-
-  const pkgJsonDependencyKeys = pkgJson.dependencies
-    ? Object.keys(pkgJson.dependencies)
-    : [];
-  const pkgJsonPeerDependencyKeys = pkgJson.peerDependencies
-    ? Object.keys(pkgJson.peerDependencies)
-    : [];
-
-  invariant(
-    !pkgJson.umdGlobalDependencies ||
-      (typeof pkgJson.umdGlobalDependencies === 'object' &&
-        !Array.isArray(pkgJson.umdGlobalDependencies) &&
-        Object.values(pkgJson.umdGlobalDependencies).every(
-          (value) => typeof value === 'string',
-        )),
-    'If "umdGlobalDependencies" is specified in package.json, it needs to be an object of the form { "package-name": "GlobalName" }, for example { "react-dom": "ReactDOM" }',
-  );
-  const pkgJsonUmdGlobalDependencies = pkgJson.umdGlobalDependencies;
 
   return {
     watchMode,
