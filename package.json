@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc --project tsconfig.build.json && chmod +x dist/cli.js",
     "watch": "npm run build && tsc --project tsconfig.build.json --watch",
-    "prepublishOnly": "npm run lint && npm run build",
+    "prepublishOnly": "npm run lint && npm test && npm run build",
     "lint": "eslint src",
     "lintStaged": "lint-staged",
     "test": "jest",
