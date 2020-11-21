@@ -50,6 +50,13 @@ module.exports = {
         'react/prop-types': 'off',
       },
     },
+    {
+      // allow node_module mocks to have default exports
+      files: ['__mocks__/**/*'],
+      rules: {
+        'import/no-default-export': 'off',
+      },
+    },
   ],
   ignorePatterns: ['dist', 'node_modules'],
 };

@@ -1,0 +1,379 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`rollup plugins dev build plugins with sideEffects: false 1`] = `
+Array [
+  "@rollup/plugin-resolve",
+  "@rollup/plugin-commonjs",
+  "@rollup/plugin-json",
+  Object {
+    "calledWith": Object {
+      "include": Array [
+        "**/*.ts+(|x)",
+        "**/*.js+(|x)",
+      ],
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "declaration": true,
+          "module": "esnext",
+          "rootDir": "./src",
+          "sourceMap": true,
+          "types": Array [],
+        },
+        "exclude": Array [
+          "**/__tests__",
+          "**/__mocks__",
+          "**/__snapshots__",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "**/*.mock.*",
+        ],
+        "include": Array [
+          "src",
+          "./node_modules/rollpkg/configs/types",
+        ],
+      },
+    },
+    "name": "rollup-plugin-typescript2",
+  },
+  "rollup-plugin-sourcemaps",
+  Object {
+    "calledWith": Object {
+      "__DEV__": "process.env.NODE_ENV !== 'production'",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+  "rollup-plugin-invariant",
+  Object {
+    "calledWith": Object {
+      "babelHelpers": "bundled",
+      "babelrc": false,
+      "configFile": false,
+      "extensions": Array [
+        ".js",
+        ".jsx",
+        ".es6",
+        ".es",
+        ".mjs",
+        ".ts",
+        ".tsx",
+      ],
+      "plugins": Array [
+        "annotate-pure-calls",
+      ],
+      "skipPreflightCheck": true,
+    },
+    "name": "@rollup/plugin-babel",
+  },
+  Object {
+    "calledWith": Object {
+      "process.env.NODE_ENV": "\\"development\\"",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+]
+`;
+
+exports[`rollup plugins dev build plugins with sideEffects: true 1`] = `
+Array [
+  "@rollup/plugin-resolve",
+  "@rollup/plugin-commonjs",
+  "@rollup/plugin-json",
+  Object {
+    "calledWith": Object {
+      "include": Array [
+        "**/*.ts+(|x)",
+        "**/*.js+(|x)",
+      ],
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "declaration": true,
+          "module": "esnext",
+          "rootDir": "./src",
+          "sourceMap": true,
+          "types": Array [],
+        },
+        "exclude": Array [
+          "**/__tests__",
+          "**/__mocks__",
+          "**/__snapshots__",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "**/*.mock.*",
+        ],
+        "include": Array [
+          "src",
+          "./node_modules/rollpkg/configs/types",
+        ],
+      },
+    },
+    "name": "rollup-plugin-typescript2",
+  },
+  "rollup-plugin-sourcemaps",
+  Object {
+    "calledWith": Object {
+      "__DEV__": "process.env.NODE_ENV !== 'production'",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+  "rollup-plugin-invariant",
+  Object {
+    "calledWith": Object {
+      "process.env.NODE_ENV": "\\"development\\"",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+]
+`;
+
+exports[`rollup plugins esm build plugins with sideEffects: false 1`] = `
+Array [
+  "@rollup/plugin-resolve",
+  "@rollup/plugin-commonjs",
+  "@rollup/plugin-json",
+  Object {
+    "calledWith": Object {
+      "include": Array [
+        "**/*.ts+(|x)",
+        "**/*.js+(|x)",
+      ],
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "declaration": true,
+          "module": "esnext",
+          "rootDir": "./src",
+          "sourceMap": true,
+          "types": Array [],
+        },
+        "exclude": Array [
+          "**/__tests__",
+          "**/__mocks__",
+          "**/__snapshots__",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "**/*.mock.*",
+        ],
+        "include": Array [
+          "src",
+          "./node_modules/rollpkg/configs/types",
+        ],
+      },
+    },
+    "name": "rollup-plugin-typescript2",
+  },
+  "rollup-plugin-sourcemaps",
+  Object {
+    "calledWith": Object {
+      "__DEV__": "process.env.NODE_ENV !== 'production'",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+  "rollup-plugin-invariant",
+  Object {
+    "calledWith": Object {
+      "babelHelpers": "bundled",
+      "babelrc": false,
+      "configFile": false,
+      "extensions": Array [
+        ".js",
+        ".jsx",
+        ".es6",
+        ".es",
+        ".mjs",
+        ".ts",
+        ".tsx",
+      ],
+      "plugins": Array [
+        "annotate-pure-calls",
+      ],
+      "skipPreflightCheck": true,
+    },
+    "name": "@rollup/plugin-babel",
+  },
+]
+`;
+
+exports[`rollup plugins esm build plugins with sideEffects: true 1`] = `
+Array [
+  "@rollup/plugin-resolve",
+  "@rollup/plugin-commonjs",
+  "@rollup/plugin-json",
+  Object {
+    "calledWith": Object {
+      "include": Array [
+        "**/*.ts+(|x)",
+        "**/*.js+(|x)",
+      ],
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "declaration": true,
+          "module": "esnext",
+          "rootDir": "./src",
+          "sourceMap": true,
+          "types": Array [],
+        },
+        "exclude": Array [
+          "**/__tests__",
+          "**/__mocks__",
+          "**/__snapshots__",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "**/*.mock.*",
+        ],
+        "include": Array [
+          "src",
+          "./node_modules/rollpkg/configs/types",
+        ],
+      },
+    },
+    "name": "rollup-plugin-typescript2",
+  },
+  "rollup-plugin-sourcemaps",
+  Object {
+    "calledWith": Object {
+      "__DEV__": "process.env.NODE_ENV !== 'production'",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+  "rollup-plugin-invariant",
+]
+`;
+
+exports[`rollup plugins output plugins 1`] = `Array []`;
+
+exports[`rollup plugins output prod plugins 1`] = `
+Array [
+  Object {
+    "calledWith": Object {
+      "format": Object {
+        "comments": false,
+      },
+    },
+    "name": "rollup-plugin-terser",
+  },
+]
+`;
+
+exports[`rollup plugins prod build plugins with sideEffects: false 1`] = `
+Array [
+  "@rollup/plugin-resolve",
+  "@rollup/plugin-commonjs",
+  "@rollup/plugin-json",
+  Object {
+    "calledWith": Object {
+      "include": Array [
+        "**/*.ts+(|x)",
+        "**/*.js+(|x)",
+      ],
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "declaration": true,
+          "module": "esnext",
+          "rootDir": "./src",
+          "sourceMap": true,
+          "types": Array [],
+        },
+        "exclude": Array [
+          "**/__tests__",
+          "**/__mocks__",
+          "**/__snapshots__",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "**/*.mock.*",
+        ],
+        "include": Array [
+          "src",
+          "./node_modules/rollpkg/configs/types",
+        ],
+      },
+    },
+    "name": "rollup-plugin-typescript2",
+  },
+  "rollup-plugin-sourcemaps",
+  Object {
+    "calledWith": Object {
+      "__DEV__": "process.env.NODE_ENV !== 'production'",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+  "rollup-plugin-invariant",
+  Object {
+    "calledWith": Object {
+      "babelHelpers": "bundled",
+      "babelrc": false,
+      "configFile": false,
+      "extensions": Array [
+        ".js",
+        ".jsx",
+        ".es6",
+        ".es",
+        ".mjs",
+        ".ts",
+        ".tsx",
+      ],
+      "plugins": Array [
+        "annotate-pure-calls",
+      ],
+      "skipPreflightCheck": true,
+    },
+    "name": "@rollup/plugin-babel",
+  },
+  Object {
+    "calledWith": Object {
+      "process.env.NODE_ENV": "\\"production\\"",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+]
+`;
+
+exports[`rollup plugins prod build plugins with sideEffects: true 1`] = `
+Array [
+  "@rollup/plugin-resolve",
+  "@rollup/plugin-commonjs",
+  "@rollup/plugin-json",
+  Object {
+    "calledWith": Object {
+      "include": Array [
+        "**/*.ts+(|x)",
+        "**/*.js+(|x)",
+      ],
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "declaration": true,
+          "module": "esnext",
+          "rootDir": "./src",
+          "sourceMap": true,
+          "types": Array [],
+        },
+        "exclude": Array [
+          "**/__tests__",
+          "**/__mocks__",
+          "**/__snapshots__",
+          "**/*.test.*",
+          "**/*.spec.*",
+          "**/*.mock.*",
+        ],
+        "include": Array [
+          "src",
+          "./node_modules/rollpkg/configs/types",
+        ],
+      },
+    },
+    "name": "rollup-plugin-typescript2",
+  },
+  "rollup-plugin-sourcemaps",
+  Object {
+    "calledWith": Object {
+      "__DEV__": "process.env.NODE_ENV !== 'production'",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+  "rollup-plugin-invariant",
+  Object {
+    "calledWith": Object {
+      "process.env.NODE_ENV": "\\"production\\"",
+    },
+    "name": "@rollup/plugin-replace",
+  },
+]
+`;

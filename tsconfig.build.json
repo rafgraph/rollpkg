@@ -8,6 +8,7 @@
     "sourceMap": true,
     "inlineSources": true
   },
+  "include": ["src"],
   "exclude": [
     "**/__tests__",
     "**/__mocks__",

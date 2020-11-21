@@ -10,6 +10,7 @@ module.exports = {
       },
     },
   },
+  rootDir: 'src',
   // use ts-jest to transform all test files so they are fully typed checked
   transform: tsjPreset.transform,
   testEnvironment: 'jsdom',

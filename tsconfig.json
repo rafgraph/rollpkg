@@ -6,5 +6,5 @@
     "module": "CommonJS",
     "allowJs": false
   },
-  "include": ["src"]
+  "include": ["src", "__mocks__"]
 }

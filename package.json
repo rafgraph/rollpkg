@@ -89,6 +89,10 @@
     "src/**/*": [
       "eslint --fix",
       "prettier --write --ignore-unknown"
+    ],
+    "__mocks__/**/*": [
+      "eslint --fix",
+      "prettier --write --ignore-unknown"
     ]
   },
   "eslintConfig": {

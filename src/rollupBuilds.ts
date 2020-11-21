@@ -57,22 +57,6 @@ export const createRollupConfig: CreateRollupConfig = ({
   pkgJsonPeerDependencyKeys,
   pkgJsonUmdGlobalDependencies,
 }) => {
-  const umdExternalDependencies = pkgJsonUmdGlobalDependencies
-    ? Object.keys(pkgJsonUmdGlobalDependencies)
-    : pkgJsonPeerDependencyKeys;
-  let umdDependencyGlobals: { [key: string]: string };
-  if (pkgJsonUmdGlobalDependencies) {
-    umdDependencyGlobals = pkgJsonUmdGlobalDependencies;
-  } else {
-    umdDependencyGlobals = {};
-    pkgJsonPeerDependencyKeys.forEach((peerDep) => {
-      umdDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
-        convertPkgNameToKebabCase(peerDep),
-      );
-    });
-  }
-  const umdNameForPkg = convertKebabCaseToPascalCase(kebabCasePkgName);
-
   const buildPlugins: Plugin[] = [
     resolveRollup(),
     commonjs(),
@@ -157,6 +141,28 @@ export const createRollupConfig: CreateRollupConfig = ({
     tryCatchDeoptimization: pkgJsonSideEffects,
     unknownGlobalSideEffects: pkgJsonSideEffects,
   };
+
+  // umdExternalDependencies is an array of external module ids that rollup
+  // will not in include in the build
+  const umdExternalDependencies = pkgJsonUmdGlobalDependencies
+    ? Object.keys(pkgJsonUmdGlobalDependencies)
+    : pkgJsonPeerDependencyKeys;
+
+  // umdDependencyGlobals is an object where the keys are the module ids (the umdExternalDependencies list)
+  // and the values are what those modules will be available in the global scope as
+  // for example { 'react-dom': 'ReactDOM' } because react-dom will be available on the window as ReactDOM
+  let umdDependencyGlobals: { [key: string]: string };
+  if (pkgJsonUmdGlobalDependencies) {
+    umdDependencyGlobals = pkgJsonUmdGlobalDependencies;
+  } else {
+    umdDependencyGlobals = {};
+    pkgJsonPeerDependencyKeys.forEach((peerDep) => {
+      umdDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
+        convertPkgNameToKebabCase(peerDep),
+      );
+    });
+  }
+  const umdNameForPkg = convertKebabCaseToPascalCase(kebabCasePkgName);
 
   return {
     esmBuildPlugins,
