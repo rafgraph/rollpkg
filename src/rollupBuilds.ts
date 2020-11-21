@@ -399,7 +399,6 @@ if (process.env.NODE_ENV === 'production') {
     bundleEsm.write({
       file: `dist/${kebabCasePkgName}.esm.js`,
       format: 'esm',
-      compact: true,
       sourcemap: true,
       sourcemapExcludeSources: false,
       plugins: outputPlugins,

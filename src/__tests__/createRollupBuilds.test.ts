@@ -250,7 +250,6 @@ describe('writeBundles', () => {
     mockFs.restore();
     expect(mockedBundleEsm.write.mock.calls[0][0]).toMatchInlineSnapshot(`
       Object {
-        "compact": true,
         "file": "dist/test-package-name.esm.js",
         "format": "esm",
         "plugins": Array [
