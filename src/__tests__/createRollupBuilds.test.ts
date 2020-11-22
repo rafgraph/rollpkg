@@ -355,7 +355,8 @@ describe('writeBundles', () => {
         module.exports = require('./test-package-name.cjs.production.js');
       } else {
         module.exports = require('./test-package-name.cjs.development.js');
-      }"
+      }
+      "
     `);
   });
 });

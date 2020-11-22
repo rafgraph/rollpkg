@@ -393,7 +393,8 @@ if (process.env.NODE_ENV === 'production') {
   module.exports = require('./${kebabCasePkgName}.cjs.production.js');
 } else {
   module.exports = require('./${kebabCasePkgName}.cjs.development.js');
-}`;
+}
+`;
 
   return Promise.all([
     bundleEsm.write({
