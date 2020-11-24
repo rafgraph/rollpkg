@@ -2,11 +2,13 @@ import * as fs from 'fs-extra';
 import { resolve } from 'path';
 import * as readline from 'readline';
 import createProgressEstimator from 'progress-estimator';
-import cliSpinners from 'cli-spinners';
 
 export const progressEstimator = createProgressEstimator({
   storagePath: resolve(__dirname, '.progress-estimator'),
-  spinner: cliSpinners.earth,
+  spinner: {
+    interval: 180,
+    frames: ['🌎', '🌏', '🌍'],
+  },
 });
 
 export const cleanDist: () => Promise<void> = () => fs.emptyDir('./dist');
