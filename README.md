@@ -8,11 +8,11 @@
 
 ---
 
-TODO add gif of rollpkg in action
+![gif of rollpkg in action](https://user-images.githubusercontent.com/11911299/100037686-a7682580-2dd0-11eb-860e-97abec2cbf48.gif)
 
 ---
 
-For an example package see `rollpkg-example-package`: [package repo](TODO), and [built and published code](TODO).
+For an example package see `rollpkg-example-package`: [package repo](https://github.com/rafgraph/rollpkg-example-package), and [built and published code](https://unpkg.com/browse/rollpkg-example-package/).
 
 ---
 
@@ -41,16 +41,17 @@ npm install --save-dev rollpkg typescript
 
 #### Add `main`, `module`, `types`, and `sideEffects` fields to `package.json`
 
-Rollpkg uses a convention over configuration approach, so the field values in `package.json` need to be exactly as listed below, just fill in your `<package-name>` and you’re good to go. Note that for scoped packages where `"name": "@scope/<package-name>"`, use `<scope-package-name>` for the `main` and `module` fields.
+Rollpkg uses a convention over configuration approach, so the values in `package.json` need to be exactly as listed below, just fill in your `<package-name>` and you’re good to go. Note that for scoped packages where `"name": "@scope/<package-name>"`, use `<scope-package-name>` for the `main` and `module` fields.
 
 ```
 {
   "name": "<package-name>",
+  ...
   "main": "dist/<package-name>.cjs.js",
   "module": "dist/<package-name>.esm.js",
   "types": "dist/index.d.ts",
   "sideEffects": false | true,
-  …
+  ...
 }
 ```
 
@@ -87,7 +88,7 @@ This [lets `npm` know to include the `dist` folder](https://docs.npmjs.com/cli/v
 
 #### Add `dist` to `.gitignore`
 
-Rollpkg outputs the builds into the `dist` folder, and this shouldn't be checked into version control.
+Rollpkg outputs the builds to the `dist` folder, and this shouldn't be checked into version control.
 
 ```gitignore
 # .gitignore file
@@ -151,6 +152,8 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
 ```json
 {
   "name": "<package-name>",
+  "version": "0.0.0",
+  "description": "Some awesome package",
   "main": "dist/<package-name>.cjs.js",
   "module": "dist/<package-name>.esm.js",
   "types": "dist/index.d.ts",
@@ -184,7 +187,7 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
 
 ## Using default configs (optional)
 
-Rollpkg provides sensible defaults for common configs that can be used for a complete zero config setup. Default configs are provided for TypeScript, Prettier, ESLint, and Jest (the configs are setup to work with TypeScript, JavaScript, and React). Use of these configs is optional and while they include support for React, using React is not a requirement (they work just fine without React).
+Rollpkg provides sensible defaults for common configs that can be used for a complete zero config setup. Default configs are provided for [TypeScript](#typescript-config), [Prettier](#prettier-config), [ESLint](#eslint-config), and [Jest](#jest-config) (the configs are setup to work with TypeScript, JavaScript, and React). Use of these configs is optional and while they include support for React, using React is not a requirement (they work just fine without React).
 
 ---
 
@@ -210,7 +213,7 @@ If you want to use [Prettier](https://prettier.io/) (recommended) you can extend
 "prettier": "rollpkg/configs/prettier.json"
 ```
 
-You may also want to set up a pre-commit hook using [`pre-commit`](https://github.com/observing/pre-commit) or [`husky`](https://github.com/typicode/husky) and [`lint-staged`](https://github.com/okonet/lint-staged) so any changes are auto-formatted before being committed. See the [Prettier docs for Git hooks](https://prettier.io/docs/en/precommit.html).
+You may also want to set up a pre-commit hook using [`pre-commit`](https://github.com/observing/pre-commit) or [`husky`](https://github.com/typicode/husky) and [`lint-staged`](https://github.com/okonet/lint-staged) so any changes are auto-formatted before being committed. See the [`rollpkg-example-package`](https://github.com/rafgraph/rollpkg-example-package) for an example pre-commit hook setup, as well as the [Prettier docs for Git hooks](https://prettier.io/docs/en/precommit.html).
 
 ---
 
@@ -254,7 +257,7 @@ It is also recommended to add `test`, `test:watch` and `coverage` scripts to `pa
 "scripts": {
   ...
   "prepublishOnly": "npm run lint && npm test && npm run build",
-  "lint": "eslint src"
+  "lint": "eslint src",
   "test": "jest",
   "test:watch": "jest --watchAll",
   "coverage": "npx live-server coverage/lcov-report"
@@ -297,7 +300,7 @@ Rollpkg uses the TypeScript compiler to transform your code to `ES5` (or your de
 #### CommonJS `cjs` build
 
 - **`<package-name>.cjs.js`**
-  - The `cjs` entry file that simply routes the bundler to the development or production `cjs` build based on `process.env.NODE_ENV`, you can view what this file looks like [here](TODO).
+  - The `cjs` entry file that selects the development or production `cjs` build based on `process.env.NODE_ENV`, you can view what this file looks like [here](https://unpkg.com/browse/rollpkg-example-package/dist/rollpkg-example-package.cjs.js).
 - **`<package-name>.cjs.development.js`**
 - **`<package-name>.cjs.production.js`**
 - The `cjs` build creates separate versions for development and production, as well as an entry file that selects the appropriate version.
@@ -326,7 +329,7 @@ Rollpkg uses the TypeScript compiler to transform your code to `ES5` (or your de
 - Watches for file changes and rebuilds when changes are detected.
 - Only creates `esm` and `cjs` development builds so the rebuilds are lightning quick.
 - Use `ctrl c` to exit watch mode.
-- Watch mode always exits `0` (non-error state) so you can chain commands in npm scripts, `rollpkg watch && npm run ...` (if watch mode didn't exit `0`, then `npm run ...` would never be executed). This is useful when using `npm link` for development so you can preform cleanup when exiting watch mode, for example `npm link && npm watch && npm unlink -g`, see [Package development with `npm link`](#package-development-with-npm-link) for more info.
+- Watch mode always exits `0` (non-error state) so you can chain commands in npm scripts, for example `rollpkg watch && npm run ...` (if watch mode didn't exit `0`, then `npm run ...` would never be executed). This is useful when using `npm link` for development so you can preform cleanup when exiting watch mode, for example `npm link && npm run watch && npm unlink -g`, see [Package development with `npm link`](#package-development-with-npm-link) for more info.
 
 ---
 
@@ -381,9 +384,9 @@ invariant(condition);
 
 Rollpkg uses the TypeScript compiler (not Babel) to transform both TS and JS code, and the TypeScript compiler uses your `tsconfig.json` to determine how to compile your code (this avoids the [limitations of using TypeScript with Babel](https://kulshekhar.github.io/ts-jest/user/babel7-or-ts) which means your code is fully type checked all the way through the build process).
 
-By default Rollpkg will transform your code into `ES5` with access to the `DOM` APIs, but without access to non-`ES5` APIs (e.g. `Promise`, `Map`, `Set`, etc). To control how your code is compiled and what JS APIs are available at runtime the TypeScript compiler allows you to specify [`target`](https://www.typescriptlang.org/tsconfig#target) and [`lib`](https://www.typescriptlang.org/tsconfig#lib) options. The `target` option specifies the ECMAScript version that your code is compiled to (the Rollpkg default is `ES5`), and the `lib` option specifies the JS APIs that will be available at runtime, which is needed for using JS APIs that can't be compiled to the specified `target`. For example, `array.includes` and the `Promise` API cannot be compiled to `ES5` but you may find it necessary to use them in your code. Note that any APIs you use in your code will either need to be available in the browser or provided via a polyfill.
+By default Rollpkg will transform your code into `ES5` with access to the `DOM` APIs, but without access to non-`ES5` APIs (e.g. `Promise`, `Map`, `Set`, etc). To control how your code is compiled and what JS APIs are available at runtime the TypeScript compiler allows you to specify [`target`](https://www.typescriptlang.org/tsconfig#target) and [`lib`](https://www.typescriptlang.org/tsconfig#lib) options. The `target` option specifies the ECMAScript version that your code is compiled to (the Rollpkg default is `ES5`), and the `lib` option specifies the JS APIs that will be available at runtime, which is needed for using JS APIs that can't be compiled to the specified `target`. For example, `array.includes` and the `Promise` API cannot be compiled to `ES5` but you may find it necessary to use them in your code. Note that all JS APIs you use in your code will either need to be available in the browser or provided via a polyfill.
 
-**Recommended best practice is to leave the `target` at `ES5` and explicitly add any additional APIs using the `lib` option. And then make note of these APIs in your package docs so users of your package know what polyfills (or browser limitations) are required to use your package. However, if you only want to support newer browsers, then feel free to increase the `target` to `ES6`, but make sure to note that in your package docs.**
+**Recommended best practice is to leave the `target` at `ES5` and explicitly add any additional JS APIs using the `lib` option. And then make note of these APIs in your package docs so users of your package know what polyfills (or browser limitations) are required to use your package. However, if you only want to support newer browsers, then feel free to increase the `target` to `ES6`, but make sure to note that in your package docs.**
 
 For example, let's say you need to use the `Promise` API, your `tsconfig.json` would look like this:
 
@@ -405,9 +408,9 @@ For example, let's say you need to use the `Promise` API, your `tsconfig.json` w
 
 TypeScript's default behavior is to include all of the types in your `node_modules/@types` folder as part of the global scope. This allows you to use things like `process.env.NODE_ENV` and Jest's `test(...)` or `expect(...)` without causing a type error. However, it also adds a significant amount of global type pollution that you might not realize is there. This pollution can make it seem like you are writing type safe code that safely compiles to your `target` ECMAScript version (Rollpkg's default is `ES5`), but in reality you are using APIs that won't be available at runtime. For example, your `node_modules/@types` folder probably includes `node`'s types (they are required by Jest and others), so the TypeScript compiler thinks your code will have access to all of Node's APIs at runtime. If your compilation `target` is set to `ES5`, using APIs like `array.includes`, `Map`, `Set` or `Promise` won't produce a TypeScript error despite the fact that none of these can be compiled to `ES5` 🤦‍♀️ (the TypeScript compiler assumes your code will have access to these APIs at runtime).
 
-TypeScript does provide a [`types`](https://www.typescriptlang.org/tsconfig#types) compiler option for you to explicitly specify which packages are included in the global scope (note that these will be in addition to any `import`s in your code, for example if you `import * as React from 'react'` then `react` types will always be included). However, failing to include types that are needed in development but won't be available at runtime (e.g. Node's `process.env.NODE_ENV` and Jest's `test`) will cause a TypeScript error in development 🤦‍♂️ Also you can only specify entire packages so it is not possible to only include the `process.env` type but exclude the rest of Node's types.
+TypeScript does provide a [`types`](https://www.typescriptlang.org/tsconfig#types) compiler option for you to explicitly specify which packages are included in the global scope (note that these will be in addition to any `import`s in your code, for example if you `import * as React from 'react'` then `react`'s types will always be included). However, failing to include types that are needed in development but won't be available at runtime (e.g. Node's `process.env.NODE_ENV` and Jest's `test`) will cause a TypeScript error in development 🤦‍♂️ Also you can only specify entire packages so it is not possible to only include the `process.env` type but exclude the rest of Node's types.
 
-Ideally [TypeScript would allow overrides](https://github.com/microsoft/TypeScript/issues/33407) based on file types like ESLint does, but until that happens the most widely used solution is multiple `tsconfig`s that include or exclude specific files and types (or alternatively ignoring the issue and accepting the global type pollution). Note that VS Code (and other editors) can only use one `tsconfig.json` per file tree to provide type feedback in the UI, so when using multiple `tsconfig`s it is typical to have a `tsconfig.json` file that doesn't restrict global types or files so you can benefit from UI based type feedback without unwanted type errors in the UI. That is, even with multiple `tsconfig`s, global type pollution is unavoidable in the editor UI.
+Ideally [TypeScript would allow overrides](https://github.com/microsoft/TypeScript/issues/33407) based on file types like ESLint does, but until that happens the most widely used solution is multiple `tsconfig`s (e.g. `tsconfig.build.json`, `tsconfig.test.json`, etc) that include or exclude specific files and types (or alternatively ignoring the issue and accepting the global type pollution). Note that VS Code (and other editors) can only use one `tsconfig.json` per file tree to provide type feedback in the UI, so when using multiple `tsconfig`s it is typical to have a `tsconfig.json` file that doesn't restrict global types or files so you can benefit from UI based type feedback without unwanted type errors in the UI. That is, even with multiple `tsconfig`s, global type pollution is unavoidable in the editor UI.
 
 #### So how does Rollpkg handle global type pollution?
 
@@ -422,7 +425,7 @@ Ideally [TypeScript would allow overrides](https://github.com/microsoft/TypeScri
 
 One way to develop packages is to use the package in a live demo app as you're working on it. Using `rollpkg watch` with [`npm link`](https://docs.npmjs.com/cli/v7/commands/npm-link) allows you to see live changes in your demo app as you make changes to your package code. Running `npm link` in the package directory will link the package to global `node_modules`, and then running `npm link <package-name>` in the demo app directory will link the package from global `node_modules` to your demo app. A good way to set this up is to add a `dev` script to `package.json` (note that `... && npm unlink -g` removes the link from global `node_modules` after you're done with the `watch` script):
 
-> For a real world example of how to do this see the example package and corresponding demo app: [rollpkg-example-package](TODO) and [rollpkg-example-package-demo](TODO)
+> For a real world example of how to do this see the example package and corresponding demo app: [rollpkg-example-package](https://github.com/rafgraph/rollpkg-example-package) and [rollpkg-example-package-demo](https://github.com/rafgraph/rollpkg-example-package-demo)
 
 ```
 "scripts": {
