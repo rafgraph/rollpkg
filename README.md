@@ -8,7 +8,7 @@
 
 ---
 
-![gif of rollpkg in action](https://user-images.githubusercontent.com/11911299/100037686-a7682580-2dd0-11eb-860e-97abec2cbf48.gif)
+![gif of rollpkg in action](https://user-images.githubusercontent.com/11911299/100155245-ebad0180-2e74-11eb-86bc-71da0ba95866.gif)
 
 ---
 
