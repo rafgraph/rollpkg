@@ -16,7 +16,7 @@ For an example package see `rollpkg-example-package`: [package repo](https://git
 
 ---
 
-[Setup](#setup-rollpkg) ⚡️ [`package.json`](#fully-setup-example-package.json) ⚡️ [Default configs](#using-default-configs-optional) ⚡️ [Build details](#build-details) ⚡️ [🚫 TS type pollution](#rollpkgs-approach-to-typescripts-global-type-pollution) ⚡️ [Dev w/ `npm link`](#package-development-with-npm-link) ⚡️ [FAQ](#faq)
+[Setup](#setup-rollpkg) ⚡️ [`package.json`](#fully-setup-example-packagejson) ⚡️ [Default configs](#using-default-configs-optional) ⚡️ [Build details](#build-details) ⚡️ [🚫 TS type pollution](#rollpkgs-approach-to-typescripts-global-type-pollution) ⚡️ [Dev w/ `npm link`](#package-development-with-npm-link) ⚡️ [FAQ](#faq)
 
 ---
 
