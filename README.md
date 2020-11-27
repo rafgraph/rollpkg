@@ -1,10 +1,10 @@
 # Rollpkg
 
-🌎 Zero config solution for building packages with [Rollup](https://rollupjs.org/) and [TypeScript](https://www.typescriptlang.org/) (supports JavaScript too).
+🌎 Convention over configuration way to create packages with [Rollup](https://rollupjs.org/) and [TypeScript](https://www.typescriptlang.org/) (supports JavaScript too).
 
 🌏 Rollpkg creates `esm`, `cjs` and `umd` builds for development and production, and fully supports tree shaking.
 
-🌍 Default configs are provided for TypeScript, Prettier, ESLint, and Jest for a complete zero config setup.
+🌍 Default configs are provided for TypeScript, Prettier, ESLint, and Jest for a complete zero decision setup.
 
 ---
 
@@ -130,10 +130,10 @@ npm publish
 
 #### That’s it!
 
-No complex options to understand or insignificant decisions to make, just sensible defaults for building packages with Rollup and TypeScript. This is what you get with Rollpkg:
+No complex options to understand or insignificant decisions to make, just a sensible convention for building packages with Rollup and TypeScript. This is what you get with Rollpkg:
 
-- Zero config builds for ES Modules `esm`, CommonJS `cjs`, and Universal Module Definition `umd` into the `dist` folder.
-- The builds are created using the TypeScript compiler (not Babel) so they are fully type checked.
+- ES Modules `esm`, CommonJS `cjs`, and Universal Module Definition `umd` builds into the `dist` folder.
+- Code compiled using the TypeScript compiler (not Babel) so it is fully type checked during the build process.
 - The `esm` build supports tree shaking and is ready to be used in development and production by modern bundlers (e.g. Webpack).
 - The `cjs` build comes with both development and production versions, and will automatically select the appropriate version when it's used.
 - The `umd` build comes with both development and production versions and is ready to be used directly in the browser from the Unpkg CDN.
@@ -187,7 +187,7 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
 
 ## Using default configs (optional)
 
-Rollpkg provides sensible defaults for common configs that can be used for a complete zero config setup. Default configs are provided for [TypeScript](#typescript-config), [Prettier](#prettier-config), [ESLint](#eslint-config), and [Jest](#jest-config) (the configs are setup to work with TypeScript, JavaScript, and React). Use of these configs is optional and while they include support for React, using React is not a requirement (they work just fine without React).
+Rollpkg provides sensible defaults for common configs that can be used for a complete zero decision setup. You can also add you own overrides to the defaults if needed. Default configs are provided for [TypeScript](#typescript-config), [Prettier](#prettier-config), [ESLint](#eslint-config), and [Jest](#jest-config) (the configs are setup to work with TypeScript, JavaScript, and React). Use of these configs is optional and while they include support for React, using React is not a requirement (they work just fine without React).
 
 ---
 
@@ -277,12 +277,13 @@ coverage
 
 ## Build details
 
-Rollpkg uses the TypeScript compiler to transform your code to `ES5` (or your desired target) and Rollup to create `esm`, `cjs` and `umd` builds. The TypeScript compiler uses your `tsconfig.json` with a few overrides to prevent [global type pollution](#rollpkgs-approach-to-typescripts-global-type-pollution), create source maps, and generate `*.d.ts` type files.
+Rollpkg uses the TypeScript compiler to transform your code to `ES5` and Rollup to create `esm`, `cjs` and `umd` builds. The TypeScript compiler uses your `tsconfig.json` with a few overrides to prevent [global type pollution](#rollpkgs-approach-to-typescripts-global-type-pollution), create source maps, and generate `*.d.ts` type files.
 
 - [`rollpkg build`](#rollpkg-build) creates `esm`, `cjs` and `umd` builds for both development and production.
 - [`rollpkg watch`](#rollpkg-watch) is lightning quick and always exits `0` so you can chain npm scripts.
-- Setting [`sideEffects: false`](#sideeffects-boolean) fully enables tree-shaking.
+- Setting [`sideEffects: false`](#sideeffects-boolean) in `package.json` fully enables tree shaking.
 - Production builds are minified and [dev mode code is removed](#dev-mode-code).
+- Your code is compiled using the TypeScript compiler (not Babel) so it is fully type checked during the build process.
 - [TypeScript compilation and JS APIs](#typescript-compilation-and-js-apis) available at runtime can be customized using your `tsconfig.json`.
 - Source maps are created for each build with your source code included in the source map so there is no need to publish your `src` folder to `npm`.
 
@@ -320,7 +321,7 @@ Rollpkg uses the TypeScript compiler to transform your code to `ES5` (or your de
   ```
 - Your package will be available on the `window` as the PascalCase version of your `<package-name>`. For example, if your package name is `rollpkg-example-package`, then it will be available on the `window` as `RollpkgExamplePackage`.
 - The `umd` build is bundled with your package `dependencies` included, but with your package `peerDependencies` listed as external globals, which are assumed to be available on the `window` as the PascalCase version of their `<package-name>`. For example, if your package has `react` as a peer dependency, then Rollpkg assumes it will be available on the `window` as `React`, which is true if [React is also loaded from the CDN](https://reactjs.org/docs/cdn-links.html).
-- You can control the external globals that your `umd` build depends on and what they will be available on the `window` as by adding a `umdGlobalDependencies` object to your `package.json`. The object needs to be in the form of `{ "package-name": "GlobalName" }`, for example `{ "react-dom": "ReactDOM" }`. If `umdGlobalDependencies` is specified in your `package.json`, then Rollpkg will use that instead of the `peerDependencies` list.
+- You can control the external globals that your `umd` build depends on and what they will be available on the `window` as by adding a `umdGlobalDependencies` object to your `package.json`. The object needs to be in the form of `{ "package-name": "GlobalName" }`, for example `"umdGlobalDependencies": { "react-dom": "ReactDOM" }`. If `umdGlobalDependencies` is specified in your `package.json`, then Rollpkg will use that instead of the `peerDependencies` list.
 
 ---
 
@@ -337,9 +338,9 @@ Rollpkg uses the TypeScript compiler to transform your code to `ES5` (or your de
 
 - The `sideEffects` option in `package.json` is required by Rollpkg.
 - Most packages should set `"sideEffects": false` to fully enable tree shaking. A side effect is code that effects the global space when the script is run even if the `import` is never used, for example a polyfill that automatically polyfills a feature when the script is run would set `sideEffects: true`. For more info see the [Webpack docs](https://webpack.js.org/guides/tree-shaking/#mark-the-file-as-side-effect-free) (note that Rollpkg doesn't support an array of filenames containing side effects like Webpack).
-- Setting `sideEffects: false` enables the following tree-shaking optimizations:
+- Setting `sideEffects: false` enables the following tree shaking optimizations:
   - `#__PURE__` annotations are injected using [`babel-plugin-annotate-pure-calls`](https://github.com/Andarist/babel-plugin-annotate-pure-calls) to help with dead code removal (note that this is the only thing Babel is used for).
-  - Rollup's more forceful [treeshake options](https://rollupjs.org/guide/en/#treeshake) are enabled with `moduleSideEffects`, `propertyReadSideEffects`, `tryCatchDeoptimization`, and `unknownGlobalSideEffects` all set to `false` (note that tree-shaking is still enabled with `sideEffects: true`, just a milder version of it is used).
+  - Rollup's more forceful [treeshake options](https://rollupjs.org/guide/en/#treeshake) are enabled with `moduleSideEffects`, `propertyReadSideEffects`, `tryCatchDeoptimization`, and `unknownGlobalSideEffects` all set to `false` (note that tree shaking is still enabled with `sideEffects: true`, just a milder version of it is used).
 
 ---
 
@@ -384,7 +385,7 @@ invariant(condition);
 
 Rollpkg uses the TypeScript compiler (not Babel) to transform both TS and JS code, and the TypeScript compiler uses your `tsconfig.json` to determine how to compile your code (this avoids the [limitations of using TypeScript with Babel](https://kulshekhar.github.io/ts-jest/user/babel7-or-ts) which means your code is fully type checked all the way through the build process).
 
-By default Rollpkg will transform your code into `ES5` with access to the `DOM` APIs, but without access to non-`ES5` APIs (e.g. `Promise`, `Map`, `Set`, etc). To control how your code is compiled and what JS APIs are available at runtime the TypeScript compiler allows you to specify [`target`](https://www.typescriptlang.org/tsconfig#target) and [`lib`](https://www.typescriptlang.org/tsconfig#lib) options. The `target` option specifies the ECMAScript version that your code is compiled to (the Rollpkg default is `ES5`), and the `lib` option specifies the JS APIs that will be available at runtime, which is needed for using JS APIs that can't be compiled to the specified `target`. For example, `array.includes` and the `Promise` API cannot be compiled to `ES5` but you may find it necessary to use them in your code. Note that all JS APIs you use in your code will either need to be available in the browser or provided via a polyfill.
+By default Rollpkg will transform your code to `ES5` with access to the `DOM` APIs, but without access to non-`ES5` APIs (e.g. `Promise`, `Map`, `Set`, etc). To control how your code is compiled and what JS APIs are available at runtime the TypeScript compiler allows you to specify [`target`](https://www.typescriptlang.org/tsconfig#target) and [`lib`](https://www.typescriptlang.org/tsconfig#lib) options. The `target` option specifies the ECMAScript version that your code is compiled to (the Rollpkg default is `ES5`), and the `lib` option specifies the JS APIs that will be available at runtime, which is needed for using JS APIs that can't be compiled to the specified `target`. For example, `array.includes` and the `Promise` API cannot be compiled to `ES5` but you may find it necessary to use them in your code. Note that all JS APIs you use in your code will either need to be available in the browser or provided via a polyfill.
 
 **Recommended best practice is to leave the `target` at `ES5` and explicitly add any additional JS APIs using the `lib` option. And then make note of these APIs in your package docs so users of your package know what polyfills (or browser limitations) are required to use your package. However, if you only want to support newer browsers, then feel free to increase the `target` to `ES6`, but make sure to note that in your package docs.**
 
