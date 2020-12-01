@@ -170,7 +170,7 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
   },
   "files": ["dist"],
   "devDependencies": {
-    "rollpkg": "^0.1.0",
+    "rollpkg": "^0.2.0",
     "typescript": "^4.0.3"
   },
   "prettier": "rollpkg/configs/prettier.json",
