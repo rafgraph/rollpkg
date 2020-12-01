@@ -24,4 +24,10 @@ module.exports = {
   coverageReporters: ['text', 'lcov'],
   // so the coverage report includes all files, including untested files
   collectCoverageFrom: ['./src/**.*'],
+  // adds type ahead capability when filtering tests in watch mode
+  // see https://github.com/jest-community/jest-watch-typeahead
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname',
+  ],
 };
