@@ -35,6 +35,8 @@ npm init
 
 #### Install `rollpkg` and `typescript`
 
+TypeScript is a `peerDependency` of Rollpkg, and Rollpkg will use the version of TS that you install for it's builds.
+
 ```
 npm install --save-dev rollpkg typescript
 ```
@@ -170,8 +172,8 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
   },
   "files": ["dist"],
   "devDependencies": {
-    "rollpkg": "^0.2.0",
-    "typescript": "^4.0.3"
+    "rollpkg": "^0.2.1",
+    "typescript": "^4.1.3"
   },
   "prettier": "rollpkg/configs/prettier.json",
   "eslintConfig": {
@@ -207,7 +209,7 @@ Having a `tsconfig.json` is a requirement of Rollpkg because it uses the TypeScr
 
 ### Prettier config
 
-If you want to use [Prettier](https://prettier.io/) (recommended) you can extend the [config provided by Rollpkg](https://github.com/rafgraph/rollpkg/blob/main/configs/prettier.json). There is no need to install Prettier as it is included with Rollpkg. In `package.json` add:
+If you want to use [Prettier](https://prettier.io/) (recommended) you can extend the [config provided by Rollpkg](https://github.com/rafgraph/rollpkg/blob/main/configs/prettier.json). There is no need to install Prettier as it is included with Rollpkg (alternatively if you need to use a specific version of Prettier, you can install it and that version will be used). In `package.json` add:
 
 ```
 "prettier": "rollpkg/configs/prettier.json"
@@ -219,7 +221,7 @@ You may also want to set up a pre-commit hook using [`pre-commit`](https://githu
 
 ### ESLint config
 
-If you want to use [ESLint](https://eslint.org/) (recommended) you can extend the [config provided by Rollpkg](https://github.com/rafgraph/rollpkg/blob/main/configs/eslint.js). It includes support for TypeScript, JavaScript, React, Prettier, and Jest. The provided ESLint config mostly just extends the recommended defaults for each plugin. There is no need to install ESLint or specific plugins as they are included with Rollpkg. In `package.json` add:
+If you want to use [ESLint](https://eslint.org/) (recommended) you can extend the [config provided by Rollpkg](https://github.com/rafgraph/rollpkg/blob/main/configs/eslint.js). It includes support for TypeScript, JavaScript, React, Prettier, and Jest. The provided ESLint config mostly just extends the recommended defaults for each plugin. There is no need to install ESLint or specific plugins as they are included with Rollpkg (alternatively if you need to use a specific version of ESLint or plugin, you can install it and that version will be used). In `package.json` add:
 
 > Note that the path includes `./node_modules/...`, this is because in order for ESLint to resolve `extends` it requires either a path to the config, or for the config to be published in its [own package named `eslint-config-...`](https://eslint.org/docs/developer-guide/shareable-configs), which may happen at some point, but for now it will remain a part of Rollpkg for easy development.
 
@@ -243,7 +245,7 @@ It is also recommended to add a `lint` script to `package.json` (the `eslint src
 
 ### Jest config
 
-If you want to use [Jest](https://jestjs.io/) (recommended) you can use the [preset provided by Rollpkg](https://github.com/rafgraph/rollpkg/blob/main/configs/jest-preset.js). The preset uses [`ts-jest`](https://github.com/kulshekhar/ts-jest) for a seamless and fully typed checked TypeScript testing experience. There is no need to install Jest as it is included with Rollpkg. In `package.json` add:
+If you want to use [Jest](https://jestjs.io/) (recommended) you can use the [preset provided by Rollpkg](https://github.com/rafgraph/rollpkg/blob/main/configs/jest-preset.js). The preset uses [`ts-jest`](https://github.com/kulshekhar/ts-jest) for a seamless and fully typed checked TypeScript testing experience. There is no need to install Jest as it is included with Rollpkg (alternatively if you need to use a specific version of Jest, you can install it and that version will be used). In `package.json` add:
 
 ```
 "jest": {
