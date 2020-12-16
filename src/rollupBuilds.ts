@@ -99,8 +99,6 @@ export const createRollupConfig: CreateRollupConfig = ({
     }),
     sourcemaps(),
     replace({ __DEV__: "process.env.NODE_ENV !== 'production'" }),
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore invariantPlugin is missing name, this isn't causing an actual error AFAIK, remove when pr is released: https://github.com/apollographql/invariant-packages/pull/45
     invariantPlugin(),
   ];
 
