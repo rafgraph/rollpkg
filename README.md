@@ -35,7 +35,7 @@ npm init
 
 #### Install `rollpkg` and `typescript`
 
-TypeScript is a `peerDependency` of Rollpkg, and Rollpkg will use the version of TS that you install for it's builds.
+TypeScript is a `peerDependency` of Rollpkg, and Rollpkg will use the version of TS that you install for its builds.
 
 ```
 npm install --save-dev rollpkg typescript
@@ -149,7 +149,7 @@ No complex options to understand or insignificant decisions to make, just a sens
 
 ### Fully setup example `package.json`
 
-This includes the optional [Rollpkg default configs](#using-default-configs-optional) and is setup to use [`npm link` for development](#package-development-with-npm-link).
+This includes the optional [Rollpkg default configs](#using-default-configs-optional) and is setup to use [`npm link` for development](#package-development-with-npm-link). Also see [`rollpkg-example-package`](https://github.com/rafgraph/rollpkg-example-package) for a fully set up example package.
 
 ```json
 {
