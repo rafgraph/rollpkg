@@ -1,6 +1,6 @@
 # Rollpkg
 
-🌎 Convention over configuration way to create packages with [Rollup](https://rollupjs.org/) and [TypeScript](https://www.typescriptlang.org/) (supports JavaScript too).
+🌎 Convention over config build tool to create packages with [Rollup](https://rollupjs.org/) and [TypeScript](https://www.typescriptlang.org/) (supports JavaScript too).
 
 🌏 Rollpkg creates `esm`, `cjs` and `umd` builds for development and production, and fully supports tree shaking.
 
