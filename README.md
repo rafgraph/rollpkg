@@ -1,6 +1,6 @@
 # Rollpkg
 
-🌎 Convention over config build tool to create packages with [Rollup](https://rollupjs.org/) and [TypeScript](https://www.typescriptlang.org/) (supports JavaScript too).
+🌎 Zero-config build tool to create packages with [Rollup](https://rollupjs.org/) and [TypeScript](https://www.typescriptlang.org/) (supports JavaScript too).
 
 🌏 Rollpkg creates `esm`, `cjs` and `umd` builds for development and production, and fully supports tree shaking.
 
@@ -443,6 +443,8 @@ One way to develop packages is to use the package in a live demo app as you're w
 
 ## FAQ
 
+- **Does Rollpkg create separate builds for development and production?**
+  - Yes, and the production builds are fully optimized. See the [`rollpkg build`](#rollpkg-build) section for details.
 - **Does Rollpkg remove dev mode code from production builds?**
   - Yes, see the [Dev mode code](#dev-mode-code) section.
 - **Does Rollpkg prevent global type pollution in my builds?**
