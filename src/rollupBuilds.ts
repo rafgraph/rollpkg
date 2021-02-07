@@ -15,12 +15,8 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import rollupTypescript from 'rollup-plugin-typescript2';
 import replace from '@rollup/plugin-replace';
-import invariantPlugin from 'rollup-plugin-invariant';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import { terser } from 'rollup-plugin-terser';
-// babel only used to add /*#__PURE__*/ annotations for function calls using babel-plugin-annotate-pure-calls
-import babel from '@rollup/plugin-babel';
-import { DEFAULT_EXTENSIONS } from '@babel/core';
 
 import {
   clearLine,
@@ -99,20 +95,7 @@ export const createRollupConfig: CreateRollupConfig = ({
     }),
     sourcemaps(),
     replace({ __DEV__: "process.env.NODE_ENV !== 'production'" }),
-    invariantPlugin(),
   ];
-
-  if (pkgJsonSideEffects === false)
-    buildPlugins.push(
-      babel({
-        babelHelpers: 'bundled',
-        extensions: [...DEFAULT_EXTENSIONS, '.ts', '.tsx'],
-        plugins: ['annotate-pure-calls'],
-        skipPreflightCheck: true,
-        configFile: false,
-        babelrc: false,
-      }),
-    );
 
   const esmBuildPlugins = buildPlugins;
 

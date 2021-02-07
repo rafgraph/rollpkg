@@ -139,7 +139,7 @@ No complex options to understand or insignificant decisions to make, just a sens
 - The `esm` build supports tree shaking and is ready to be used in development and production by modern bundlers (e.g. Webpack).
 - The `cjs` build comes with both development and production versions, and will automatically select the appropriate version when it's used.
 - The `umd` build comes with both development and production versions and is ready to be used directly in the browser from the Unpkg CDN.
-- Production builds are minified and any code that is gated by `if (process.env.NODE_ENV !== 'production') {...}` or `if (__DEV__) {...}` is removed. Also, if using an `invariant` library like [tiny-invariant](https://github.com/alexreardon/tiny-invariant), `invariant(condition, message)` will be transformed into `invariant(condition)` in production builds.
+- Production builds are minified and any code that is gated by `if (process.env.NODE_ENV !== 'production') {...}` or `if (__DEV__) {...}` is removed.
 - [Bundlephobia](https://bundlephobia.com/) package size stats for each build
 - Generated `*.d.ts` type files
 - Source maps
@@ -341,7 +341,6 @@ Rollpkg uses the TypeScript compiler to transform your code to `ES5` and Rollup 
 - The `sideEffects` option in `package.json` is required by Rollpkg.
 - Most packages should set `"sideEffects": false` to fully enable tree shaking. A side effect is code that effects the global space when the script is run even if the `import` is never used, for example a polyfill that automatically polyfills a feature when the script is run would set `sideEffects: true`. For more info see the [Webpack docs](https://webpack.js.org/guides/tree-shaking/#mark-the-file-as-side-effect-free) (note that Rollpkg doesn't support an array of filenames containing side effects like Webpack).
 - Setting `sideEffects: false` enables the following tree shaking optimizations:
-  - `#__PURE__` annotations are injected using [`babel-plugin-annotate-pure-calls`](https://github.com/Andarist/babel-plugin-annotate-pure-calls) to help with dead code removal (note that this is the only thing Babel is used for).
   - Rollup's more forceful [treeshake options](https://rollupjs.org/guide/en/#treeshake) are enabled with `moduleSideEffects`, `propertyReadSideEffects`, `tryCatchDeoptimization`, and `unknownGlobalSideEffects` all set to `false` (note that tree shaking is still enabled with `sideEffects: true`, just a milder version of it is used).
 
 ---
@@ -361,23 +360,6 @@ if (__DEV__) {
 ```
 
 Note that `__DEV__` is shorthand for `process.env.NODE_ENV !== 'production'` and Rollpkg will transform `__DEV__` into `process.env.NODE_ENV !== 'production'` before proceeding to create development and production builds.
-
-If using an `invariant` library like [tiny-invariant](https://github.com/alexreardon/tiny-invariant), then `invariant(condition, message)` will be transformed so the message is removed from production builds:
-
-```js
-import invariant from 'tiny-invariant';
-
-// your code...
-invariant(condition, 'Some informative message that takes up a lot of kbs');
-
-// ...will be transformed into this:
-process.env.NODE_ENV === 'production'
-  ? invariant(condition)
-  : invariant(condition, 'Some informative message that takes up a lot of kbs');
-
-// ...and will end up like this in production builds:
-invariant(condition);
-```
 
 ---
 
