@@ -16,6 +16,7 @@ Array [
         "compilerOptions": Object {
           "declaration": true,
           "rootDir": "./src",
+          "target": "ES2018",
           "types": Array [],
         },
         "include": Array [
@@ -24,7 +25,7 @@ Array [
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
-          "module": "esnext",
+          "module": "ESNext",
           "sourceMap": true,
         },
         "exclude": Array [
@@ -68,6 +69,7 @@ Array [
         "compilerOptions": Object {
           "declaration": true,
           "rootDir": "./src",
+          "target": "ES2018",
           "types": Array [],
         },
         "include": Array [
@@ -76,7 +78,7 @@ Array [
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
-          "module": "esnext",
+          "module": "ESNext",
           "sourceMap": true,
         },
         "exclude": Array [
@@ -120,6 +122,7 @@ Array [
         "compilerOptions": Object {
           "declaration": true,
           "rootDir": "./src",
+          "target": "ES2018",
           "types": Array [],
         },
         "include": Array [
@@ -128,7 +131,7 @@ Array [
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
-          "module": "esnext",
+          "module": "ESNext",
           "sourceMap": true,
         },
         "exclude": Array [
@@ -178,6 +181,7 @@ Array [
         "compilerOptions": Object {
           "declaration": true,
           "rootDir": "./src",
+          "target": "ES2018",
           "types": Array [],
         },
         "include": Array [
@@ -186,7 +190,7 @@ Array [
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
-          "module": "esnext",
+          "module": "ESNext",
           "sourceMap": true,
         },
         "exclude": Array [
@@ -251,6 +255,7 @@ Array [
         "compilerOptions": Object {
           "declaration": true,
           "rootDir": "./src",
+          "target": "ES2018",
           "types": Array [],
         },
         "include": Array [
@@ -259,7 +264,7 @@ Array [
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
-          "module": "esnext",
+          "module": "ESNext",
           "sourceMap": true,
         },
         "exclude": Array [
@@ -309,6 +314,7 @@ Array [
         "compilerOptions": Object {
           "declaration": true,
           "rootDir": "./src",
+          "target": "ES2018",
           "types": Array [],
         },
         "include": Array [
@@ -317,7 +323,7 @@ Array [
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
-          "module": "esnext",
+          "module": "ESNext",
           "sourceMap": true,
         },
         "exclude": Array [

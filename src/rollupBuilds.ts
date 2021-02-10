@@ -65,6 +65,7 @@ export const createRollupConfig: CreateRollupConfig = ({
       // verbosity: 3, // use to debug
       tsconfigDefaults: {
         compilerOptions: {
+          target: 'ES2018',
           // types: [] eliminates global type pollution in builds
           // and ensures that the only types allowed
           // are explicitly set in tsconfig or are imported into source files
@@ -82,7 +83,7 @@ export const createRollupConfig: CreateRollupConfig = ({
       tsconfigOverride: {
         compilerOptions: {
           // rollup requires module to be es2015 or esnext
-          module: 'esnext',
+          module: 'ESNext',
           // always generate source maps which are used by rollup to create the actual source map
           // without this rollup creates blank source maps
           // note that the tsconfig "inlineSources" option has no effect on how rollup generates source maps
@@ -220,7 +221,7 @@ export const rollupWatch: RollupWatch = ({
     },
   };
 
-  // in watch mode only create esm and cjs dev builds
+  // in watch mode only create esm build
   const watcher = watch(esmWatchOptions);
 
   const earth = ['🌎', '🌏', '🌍'];
