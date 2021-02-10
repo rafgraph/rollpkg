@@ -69,17 +69,9 @@ Rollpkg uses a convention over configuration approach, so the values in `package
 }
 ```
 
-#### Add a `files` array with `dist` to `package.json`
+#### Create a `tsconfig.json` file
 
-This [lets `npm` know to include the `dist` folder](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#files) when you publish your package.
-
-```
-"files": [
-  "dist"
-]
-```
-
-#### Create a `tsconfig.json` file and extend the `tsconfig` provided by Rollpkg
+It is recommended to extend the Rollpkg `tsconfig` and add your own options after extending it, however, extending the Rollpkg `tsconfig` is not a requirement.
 
 ```
 // tsconfig.json
@@ -88,15 +80,11 @@ This [lets `npm` know to include the `dist` folder](https://docs.npmjs.com/cli/v
 }
 ```
 
-#### Add `dist` to `.gitignore`
-
-Rollpkg outputs the builds to the `dist` folder, and this shouldn't be checked into version control.
-
-```gitignore
-# .gitignore file
-node_modules
-dist
-```
+> Note: you can specify the path to your `tsconfig` if needed using the command line option:
+>
+> ```
+> rollpkg build --tsconfig ./path/to/tsconfig.prod.json
+> ```
 
 #### Create an `index.ts` or `index.tsx` entry file in the `src` folder
 
@@ -115,12 +103,24 @@ package-name
 └─tsconfig.json
 ```
 
-#### While developing use the `build` and `watch` scripts
+#### Add `dist` to `.gitignore`
+
+Rollpkg outputs the builds to the `dist` folder, and this shouldn't be checked into version control.
+
+```gitignore
+# .gitignore file
+node_modules
+dist
+```
+
+#### Add a `files` array with `dist` to `package.json`
+
+This [lets `npm` know to include the `dist` folder](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#files) when you publish your package.
 
 ```
-npm run build
-# OR
-npm run watch
+"files": [
+  "dist"
+]
 ```
 
 #### Publish when ready
@@ -134,11 +134,10 @@ npm publish
 
 No complex options to understand or insignificant decisions to make, just a sensible convention for building packages with Rollup and TypeScript. This is what you get with Rollpkg:
 
-- ES Modules `esm`, CommonJS `cjs`, and Universal Module Definition `umd` builds into the `dist` folder.
+- ES Modules `esm` and CommonJS `cjs` builds into the `dist` folder (`umd` builds can be added with the `--addUmdBuild` cli option).
 - Code compiled using the TypeScript compiler (not Babel) so it is fully type checked during the build process.
 - The `esm` build supports tree shaking and is ready to be used in development and production by modern bundlers (e.g. Webpack).
 - The `cjs` build comes with both development and production versions, and will automatically select the appropriate version when it's used.
-- The `umd` build comes with both development and production versions and is ready to be used directly in the browser from the Unpkg CDN.
 - Production builds are minified and any code that is gated by `if (process.env.NODE_ENV !== 'production') {...}` or `if (__DEV__) {...}` is removed.
 - [Bundlephobia](https://bundlephobia.com/) package size stats for each build
 - Generated `*.d.ts` type files
@@ -181,6 +180,127 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
   },
   "jest": {
     "preset": "rollpkg"
+  }
+}
+```
+
+---
+
+## Build details
+
+Rollpkg uses the TypeScript compiler to transform your code to `ES5` and Rollup to create `esm`, `cjs` and `umd` builds. The TypeScript compiler uses your `tsconfig.json` with a few overrides to prevent [global type pollution](#rollpkgs-approach-to-typescripts-global-type-pollution), create source maps, and generate `*.d.ts` type files.
+
+- [`rollpkg build`](#rollpkg-build) creates `esm`, `cjs` and `umd` builds for both development and production.
+- [`rollpkg watch`](#rollpkg-watch) is lightning quick and always exits `0` so you can chain npm scripts.
+- Setting [`sideEffects: false`](#sideeffects-boolean) in `package.json` fully enables tree shaking.
+- Production builds are minified and [dev mode code is removed](#dev-mode-code).
+- Your code is compiled using the TypeScript compiler (not Babel) so it is fully type checked during the build process.
+- [TypeScript compilation and JS APIs](#typescript-compilation-and-js-apis) available at runtime can be customized using your `tsconfig.json`.
+- Source maps are created for each build with your source code included in the source map so there is no need to publish your `src` folder to `npm`.
+
+---
+
+### `rollpkg build`
+
+#### `rollpkg build` cli options
+
+- `rollpkg build --tsconfig ./path/to/tsconfig.prod.json`
+  - If needed you can specify the path to your `tsconfig`.
+- `rollpkg build --addUmdBuild`
+  - By default `rollpkg build` only creates `esm` and `cjs` builds, use this option to also create `umd` builds.
+- `rollpkg build --noStats`
+  - By default `rollpkg build` will calculate Bundlephobia stats after the build, use this option skip the stats calculation.
+
+
+#### ES Modules `esm` build
+
+- **`<package-name>.esm.js`**
+- The `esm` build is ready to be used by modern bundlers (e.g. Webpack) for both development and production and fully supports tree shaking. When creating production builds the bundler will minify the code and remove any code that is gated by `process.env.NODE_ENV !== 'production'`.
+
+#### CommonJS `cjs` build
+
+- **`<package-name>.cjs.js`**
+  - The `cjs` entry file that selects the development or production `cjs` build based on `process.env.NODE_ENV`, you can view what this file looks like [here](https://unpkg.com/browse/rollpkg-example-package/dist/rollpkg-example-package.cjs.js).
+- **`<package-name>.cjs.development.js`**
+- **`<package-name>.cjs.production.js`**
+- The `cjs` build creates separate versions for development and production, as well as an entry file that selects the appropriate version.
+
+#### Universal Module Definition `umd` build
+
+<!-- prettier-ignore -->
+- Use the `--addUmdBuild` cli option to create `umd` builds.
+- **`<package-name>.umd.development.js`**
+- **`<package-name>.umd.production.js`**
+- The `umd` builds are ready to be used directly in the browser from the Unpkg CDN, just add the script to `index.html`:
+  ```html
+  <!-- in development use -->
+  <script src="https://unpkg.com/<pacakge-name>/dist/<pacakge-name>.umd.development.js"></script>
+
+  <!-- in production use -->
+  <script src="https://unpkg.com/<pacakge-name>/dist/<pacakge-name>.umd.production.js"></script>
+  ```
+- Your package will be available on the `window` as the PascalCase version of your `<package-name>`. For example, if your package name is `rollpkg-example-package`, then it will be available on the `window` as `RollpkgExamplePackage`.
+- The `umd` build is bundled with your package `dependencies` included, but with your package `peerDependencies` listed as external globals, which are assumed to be available on the `window` as the PascalCase version of their `<package-name>`. For example, if your package has `react` as a peer dependency, then Rollpkg assumes it will be available on the `window` as `React`, which is true if [React is also loaded from the CDN](https://reactjs.org/docs/cdn-links.html).
+- You can control the external globals that your `umd` build depends on and what they will be available on the `window` as by adding a `umdGlobalDependencies` object to your `package.json`. The object needs to be in the form of `{ "package-name": "GlobalName" }`, for example `"umdGlobalDependencies": { "react-dom": "ReactDOM" }`. If `umdGlobalDependencies` is specified in your `package.json`, then Rollpkg will use that instead of the `peerDependencies` list.
+
+---
+
+### `rollpkg watch`
+
+- Watches for file changes and rebuilds when changes are detected.
+- Only creates `esm` build so the rebuilds are lightning quick.
+- Use `ctrl c` to exit watch mode.
+- Watch mode always exits `0` (non-error state) so you can chain commands in npm scripts, for example `rollpkg watch && npm run ...` (if watch mode didn't exit `0`, then `npm run ...` would never be executed). This is useful when using `npm link` for development so you can preform cleanup when exiting watch mode, for example `npm link && npm run watch && npm unlink -g`, see [Package development with `npm link`](#package-development-with-npm-link) for more info.
+
+---
+
+### `sideEffects: boolean`
+
+- The `sideEffects` option in `package.json` is required by Rollpkg.
+- Most packages should set `"sideEffects": false` to fully enable tree shaking. A side effect is code that effects the global space when the script is run even if the `import` is never used, for example a polyfill that automatically polyfills a feature when the script is run would set `sideEffects: true`. For more info see the [Webpack docs](https://webpack.js.org/guides/tree-shaking/#mark-the-file-as-side-effect-free) (note that Rollpkg doesn't support an array of filenames containing side effects like Webpack).
+- Setting `sideEffects: false` enables the following tree shaking optimizations:
+  - Rollup's more forceful [treeshake options](https://rollupjs.org/guide/en/#treeshake) are enabled with `moduleSideEffects`, `propertyReadSideEffects`, `tryCatchDeoptimization`, and `unknownGlobalSideEffects` all set to `false` (note that tree shaking is still enabled with `sideEffects: true`, just a milder version of it is used).
+
+---
+
+### Dev mode code
+
+Dev mode code is code that will only run in development and will be removed from production builds. You can use `process.env.NODE_ENV` or `__DEV__` to gate dev mode code and Rollpkg will remove it from production builds:
+
+```js
+if (process.env.NODE_ENV !== 'production') {
+  // dev mode code here
+}
+
+if (__DEV__) {
+  // dev mode code here
+}
+```
+
+Note that `__DEV__` is shorthand for `process.env.NODE_ENV !== 'production'` and Rollpkg will transform `__DEV__` into `process.env.NODE_ENV !== 'production'` before proceeding to create development and production builds.
+
+---
+
+### TypeScript compilation and JS APIs
+
+> Note that for most projects [extending the Rollpkg `tsconfig`](#typescript-config) is all that's required and you can ignore this section.
+
+Rollpkg uses the TypeScript compiler (not Babel) to transform both TS and JS code, and the TypeScript compiler uses your `tsconfig.json` to determine how to compile your code (this avoids the [limitations of using TypeScript with Babel](https://kulshekhar.github.io/ts-jest/user/babel7-or-ts) which means your code is fully type checked all the way through the build process).
+
+By default Rollpkg will transform your code to `ES5` with access to the `DOM` APIs, but without access to non-`ES5` APIs (e.g. `Promise`, `Map`, `Set`, etc). To control how your code is compiled and what JS APIs are available at runtime the TypeScript compiler allows you to specify [`target`](https://www.typescriptlang.org/tsconfig#target) and [`lib`](https://www.typescriptlang.org/tsconfig#lib) options. The `target` option specifies the ECMAScript version that your code is compiled to (the Rollpkg default is `ES5`), and the `lib` option specifies the JS APIs that will be available at runtime, which is needed for using JS APIs that can't be compiled to the specified `target`. For example, `array.includes` and the `Promise` API cannot be compiled to `ES5` but you may find it necessary to use them in your code. Note that all JS APIs you use in your code will need to be available in the browser, either supported natively or provided by a polyfill.
+
+**Recommended best practice is to leave the `target` at `ES5` and explicitly add any additional JS APIs using the `lib` option. However, if you only want to support newer browsers, then feel free to increase the `target` to `ES6`.**
+
+For example, let's say you need to use the `Promise` API, your `tsconfig.json` would look like this:
+
+> Note that when using the `lib` option you need to specify _all_ available JS APIs, including the base `ES5` APIs and `DOM` APIs.
+
+```json
+// example tsconfig.json to use the Promise API
+{
+  "extends": "rollpkg/configs/tsconfig.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ES5", "ES2015.Promise"]
   }
 }
 ```
@@ -273,118 +393,6 @@ The Rollpkg Jest config will automatically generate a code coverage report when 
 node_modules
 dist
 coverage
-```
-
----
-
-## Build details
-
-Rollpkg uses the TypeScript compiler to transform your code to `ES5` and Rollup to create `esm`, `cjs` and `umd` builds. The TypeScript compiler uses your `tsconfig.json` with a few overrides to prevent [global type pollution](#rollpkgs-approach-to-typescripts-global-type-pollution), create source maps, and generate `*.d.ts` type files.
-
-- [`rollpkg build`](#rollpkg-build) creates `esm`, `cjs` and `umd` builds for both development and production.
-- [`rollpkg watch`](#rollpkg-watch) is lightning quick and always exits `0` so you can chain npm scripts.
-- Setting [`sideEffects: false`](#sideeffects-boolean) in `package.json` fully enables tree shaking.
-- Production builds are minified and [dev mode code is removed](#dev-mode-code).
-- Your code is compiled using the TypeScript compiler (not Babel) so it is fully type checked during the build process.
-- [TypeScript compilation and JS APIs](#typescript-compilation-and-js-apis) available at runtime can be customized using your `tsconfig.json`.
-- Source maps are created for each build with your source code included in the source map so there is no need to publish your `src` folder to `npm`.
-
----
-
-### `rollpkg build`
-
-`rollpkg build` outputs 6 build files to the `dist` folder, as well as source maps and `*.d.ts` typings.
-
-#### ES Modules `esm` build
-
-- **`<package-name>.esm.js`**
-- The `esm` build is ready to be used by modern bundlers (e.g. Webpack) for both development and production and fully supports tree shaking. When creating production builds the bundler will minify the code and remove any code that is gated by `process.env.NODE_ENV !== 'production'`.
-
-#### CommonJS `cjs` build
-
-- **`<package-name>.cjs.js`**
-  - The `cjs` entry file that selects the development or production `cjs` build based on `process.env.NODE_ENV`, you can view what this file looks like [here](https://unpkg.com/browse/rollpkg-example-package/dist/rollpkg-example-package.cjs.js).
-- **`<package-name>.cjs.development.js`**
-- **`<package-name>.cjs.production.js`**
-- The `cjs` build creates separate versions for development and production, as well as an entry file that selects the appropriate version.
-
-#### Universal Module Definition `umd` build
-
-<!-- prettier-ignore -->
-- **`<package-name>.umd.development.js`**
-- **`<package-name>.umd.production.js`**
-- The `umd` builds are ready to be used directly in the browser from the Unpkg CDN, just add the script to `index.html`:
-  ```html
-  <!-- in development use -->
-  <script src="https://unpkg.com/<pacakge-name>/dist/<pacakge-name>.umd.development.js"></script>
-
-  <!-- in production use -->
-  <script src="https://unpkg.com/<pacakge-name>/dist/<pacakge-name>.umd.production.js"></script>
-  ```
-- Your package will be available on the `window` as the PascalCase version of your `<package-name>`. For example, if your package name is `rollpkg-example-package`, then it will be available on the `window` as `RollpkgExamplePackage`.
-- The `umd` build is bundled with your package `dependencies` included, but with your package `peerDependencies` listed as external globals, which are assumed to be available on the `window` as the PascalCase version of their `<package-name>`. For example, if your package has `react` as a peer dependency, then Rollpkg assumes it will be available on the `window` as `React`, which is true if [React is also loaded from the CDN](https://reactjs.org/docs/cdn-links.html).
-- You can control the external globals that your `umd` build depends on and what they will be available on the `window` as by adding a `umdGlobalDependencies` object to your `package.json`. The object needs to be in the form of `{ "package-name": "GlobalName" }`, for example `"umdGlobalDependencies": { "react-dom": "ReactDOM" }`. If `umdGlobalDependencies` is specified in your `package.json`, then Rollpkg will use that instead of the `peerDependencies` list.
-
----
-
-### `rollpkg watch`
-
-- Watches for file changes and rebuilds when changes are detected.
-- Only creates `esm` and `cjs` development builds so the rebuilds are lightning quick.
-- Use `ctrl c` to exit watch mode.
-- Watch mode always exits `0` (non-error state) so you can chain commands in npm scripts, for example `rollpkg watch && npm run ...` (if watch mode didn't exit `0`, then `npm run ...` would never be executed). This is useful when using `npm link` for development so you can preform cleanup when exiting watch mode, for example `npm link && npm run watch && npm unlink -g`, see [Package development with `npm link`](#package-development-with-npm-link) for more info.
-
----
-
-### `sideEffects: boolean`
-
-- The `sideEffects` option in `package.json` is required by Rollpkg.
-- Most packages should set `"sideEffects": false` to fully enable tree shaking. A side effect is code that effects the global space when the script is run even if the `import` is never used, for example a polyfill that automatically polyfills a feature when the script is run would set `sideEffects: true`. For more info see the [Webpack docs](https://webpack.js.org/guides/tree-shaking/#mark-the-file-as-side-effect-free) (note that Rollpkg doesn't support an array of filenames containing side effects like Webpack).
-- Setting `sideEffects: false` enables the following tree shaking optimizations:
-  - Rollup's more forceful [treeshake options](https://rollupjs.org/guide/en/#treeshake) are enabled with `moduleSideEffects`, `propertyReadSideEffects`, `tryCatchDeoptimization`, and `unknownGlobalSideEffects` all set to `false` (note that tree shaking is still enabled with `sideEffects: true`, just a milder version of it is used).
-
----
-
-### Dev mode code
-
-Dev mode code is code that will only run in development and will be removed from production builds. You can use `process.env.NODE_ENV` or `__DEV__` to gate dev mode code and Rollpkg will remove it from production builds:
-
-```js
-if (process.env.NODE_ENV !== 'production') {
-  // dev mode code here
-}
-
-if (__DEV__) {
-  // dev mode code here
-}
-```
-
-Note that `__DEV__` is shorthand for `process.env.NODE_ENV !== 'production'` and Rollpkg will transform `__DEV__` into `process.env.NODE_ENV !== 'production'` before proceeding to create development and production builds.
-
----
-
-### TypeScript compilation and JS APIs
-
-> Note that for most projects [extending the Rollpkg `tsconfig`](#typescript-config) is all that's required and you can ignore this section.
-
-Rollpkg uses the TypeScript compiler (not Babel) to transform both TS and JS code, and the TypeScript compiler uses your `tsconfig.json` to determine how to compile your code (this avoids the [limitations of using TypeScript with Babel](https://kulshekhar.github.io/ts-jest/user/babel7-or-ts) which means your code is fully type checked all the way through the build process).
-
-By default Rollpkg will transform your code to `ES5` with access to the `DOM` APIs, but without access to non-`ES5` APIs (e.g. `Promise`, `Map`, `Set`, etc). To control how your code is compiled and what JS APIs are available at runtime the TypeScript compiler allows you to specify [`target`](https://www.typescriptlang.org/tsconfig#target) and [`lib`](https://www.typescriptlang.org/tsconfig#lib) options. The `target` option specifies the ECMAScript version that your code is compiled to (the Rollpkg default is `ES5`), and the `lib` option specifies the JS APIs that will be available at runtime, which is needed for using JS APIs that can't be compiled to the specified `target`. For example, `array.includes` and the `Promise` API cannot be compiled to `ES5` but you may find it necessary to use them in your code. Note that all JS APIs you use in your code will need to be available in the browser, either supported natively or provided by a polyfill.
-
-**Recommended best practice is to leave the `target` at `ES5` and explicitly add any additional JS APIs using the `lib` option. And then make note of these APIs in your package docs so users of your package know what polyfills (or browser limitations) are required to use your package. However, if you only want to support newer browsers, then feel free to increase the `target` to `ES6`, but make sure to note that in your package docs.**
-
-For example, let's say you need to use the `Promise` API, your `tsconfig.json` would look like this:
-
-> Note that when using the `lib` option you need to specify _all_ available JS APIs, including the base `ES5` APIs and `DOM` APIs.
-
-```json
-// example tsconfig.json to use the Promise API
-{
-  "extends": "rollpkg/configs/tsconfig.json",
-  "compilerOptions": {
-    "lib": ["DOM", "ES5", "ES2015.Promise"]
-  }
-}
 ```
 
 ---

@@ -51,40 +51,6 @@ describe('fails with incorrect configuration', () => {
     );
   });
 
-  test('fails when additional arg provided to "build"', async () => {
-    mockFs({
-      '/package.json': JSON.stringify(createTestPackageJson()),
-      '/tsconfig.json': '',
-      '/src/index.ts': '',
-    });
-
-    await expect(
-      checkInvariantsAndGetConfiguration({
-        args: ['build', '--someArg'],
-        cwd: '/',
-      }),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"rollpkg requires a \\"build\\" or \\"watch\\" command with no arguments, received: \\"build --someArg\\""`,
-    );
-  });
-
-  test('fails when additional arg provided to "watch"', async () => {
-    mockFs({
-      '/package.json': JSON.stringify(createTestPackageJson()),
-      '/tsconfig.json': '',
-      '/src/index.ts': '',
-    });
-
-    await expect(
-      checkInvariantsAndGetConfiguration({
-        args: ['watch', '--someArg'],
-        cwd: '/',
-      }),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"rollpkg requires a \\"build\\" or \\"watch\\" command with no arguments, received: \\"watch --someArg\\""`,
-    );
-  });
-
   test('fails without a package.json file', async () => {
     mockFs({
       '/tsconfig.json': '',
@@ -216,25 +182,6 @@ describe('fails with incorrect configuration', () => {
     );
   });
 
-  test('fails when "types" field not present', async () => {
-    const packageJson = createTestPackageJson();
-    delete packageJson.types;
-    mockFs({
-      '/package.json': JSON.stringify(packageJson),
-      '/tsconfig.json': '',
-      '/src/index.ts': '',
-    });
-
-    await expect(
-      checkInvariantsAndGetConfiguration({
-        args: ['build'],
-        cwd: '/',
-      }),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"The value of \\"types\\" in package.json needs to be \\"dist/index.d.ts\\", value found: \\"undefined\\""`,
-    );
-  });
-
   test('fails when "types" does not match convention', async () => {
     const packageJson = createTestPackageJson();
     packageJson.types = 'some-types.d.ts';
@@ -310,22 +257,6 @@ describe('fails with incorrect configuration', () => {
       }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
       `"If \\"umdGlobalDependencies\\" is specified in package.json, it needs to be an object of the form { \\"package-name\\": \\"GlobalName\\" }, for example { \\"react-dom\\": \\"ReactDOM\\" }"`,
-    );
-  });
-
-  test('fails without a tsconfig.json file', async () => {
-    mockFs({
-      '/package.json': JSON.stringify(createTestPackageJson()),
-      '/src/index.ts': '',
-    });
-
-    await expect(
-      checkInvariantsAndGetConfiguration({
-        args: ['build'],
-        cwd: '/',
-      }),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"Cannot read tsconfig.json at /tsconfig.json"`,
     );
   });
 
@@ -495,20 +426,23 @@ describe('correctly configures rollpkg', () => {
         cwd: '/',
       }),
     ).resolves.toMatchInlineSnapshot(`
-                      Object {
-                        "entryFile": "/src/index.ts",
-                        "kebabCasePkgName": "test-package-name",
-                        "pkgJsonDependencyKeys": Array [
-                          "some-dependency",
-                        ],
-                        "pkgJsonName": "test-package-name",
-                        "pkgJsonPeerDependencyKeys": Array [
-                          "some-peer-dependency",
-                        ],
-                        "pkgJsonSideEffects": false,
-                        "pkgJsonUmdGlobalDependencies": undefined,
-                        "watchMode": false,
-                      }
-                  `);
+            Object {
+              "addUmdBuild": false,
+              "entryFile": "/src/index.ts",
+              "includeBundlephobiaStats": true,
+              "kebabCasePkgName": "test-package-name",
+              "pkgJsonDependencyKeys": Array [
+                "some-dependency",
+              ],
+              "pkgJsonName": "test-package-name",
+              "pkgJsonPeerDependencyKeys": Array [
+                "some-peer-dependency",
+              ],
+              "pkgJsonSideEffects": false,
+              "pkgJsonUmdGlobalDependencies": undefined,
+              "tsconfigPath": undefined,
+              "watchMode": false,
+            }
+          `);
   });
 });

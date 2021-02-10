@@ -10,6 +10,9 @@ interface ConfigureRollpkg {
   (input: { args: string[]; cwd: string }): Promise<
     | {
         watchMode: boolean;
+        tsconfigPath?: string;
+        addUmdBuild: boolean;
+        includeBundlephobiaStats: boolean;
         pkgJsonName: string;
         kebabCasePkgName: string;
         entryFile: string;
@@ -27,13 +30,27 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   cwd,
 }) => {
   invariant(
-    args.length === 1 && (args[0] === 'build' || args[0] === 'watch'),
+    args[0] === 'build' || args[0] === 'watch',
     `rollpkg requires a "build" or "watch" command with no arguments, received: "${args.join(
       ' ',
     )}"`,
   );
 
   const watchMode = args[0] === 'watch';
+
+  let tsconfigPath;
+  const tsconfigOptionIdx = args.indexOf('--tsconfig');
+  if (tsconfigOptionIdx !== -1) {
+    tsconfigPath = args[tsconfigOptionIdx + 1];
+    try {
+      await fs.readFile(tsconfigPath, 'utf8');
+    } catch (e) {
+      throw new Error(`Cannot read tsconfig at ${tsconfigPath}`);
+    }
+  }
+
+  const addUmdBuild = args.includes('--addUmdBuild');
+  const includeBundlephobiaStats = !args.includes('--noStats');
 
   interface PkgJson extends PackageJson {
     umdGlobalDependencies?: { [key: string]: string };
@@ -80,7 +97,7 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
     `The value of "module" in package.json needs to be "${moduleShouldBe}", value found: "${pkgJson.module}"`,
   );
   invariant(
-    pkgJson.types === typesShouldBe,
+    !pkgJson.types || pkgJson.types === typesShouldBe,
     `The value of "types" in package.json needs to be "${typesShouldBe}", value found: "${pkgJson.types}"`,
   );
   invariant(
@@ -109,14 +126,6 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   );
   const pkgJsonUmdGlobalDependencies = pkgJson.umdGlobalDependencies;
 
-  try {
-    await fs.readFile(resolve(cwd, 'tsconfig.json'), 'utf8');
-  } catch (e) {
-    throw new Error(
-      `Cannot read tsconfig.json at ${resolve(cwd, 'tsconfig.json')}`,
-    );
-  }
-
   const srcDir = resolve(cwd, 'src');
   const indexTsExists = await fileExists(srcDir, 'index.ts');
   const indexTsxExists = await fileExists(srcDir, 'index.tsx');
@@ -134,6 +143,9 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
 
   return {
     watchMode,
+    tsconfigPath,
+    addUmdBuild,
+    includeBundlephobiaStats,
     pkgJsonName,
     kebabCasePkgName,
     entryFile,

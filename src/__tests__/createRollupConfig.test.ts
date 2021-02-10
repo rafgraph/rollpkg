@@ -3,6 +3,7 @@ import { createRollupConfig } from '../rollupBuilds';
 describe('treeshake options', () => {
   test('treeshake options with sideEffects: false', () => {
     const { treeshakeOptions } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: false,
       pkgJsonPeerDependencyKeys: [],
@@ -21,6 +22,7 @@ describe('treeshake options', () => {
 
   test('treeshake options with sideEffects: true', () => {
     const { treeshakeOptions } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: [],
@@ -39,14 +41,15 @@ describe('treeshake options', () => {
 });
 
 describe('replaces dev mode code', () => {
-  test("esm build plugins replaces __DEV__ with process.env.NODE_ENV !== 'production'", () => {
-    const { esmBuildPlugins } = createRollupConfig({
+  test("default build plugins replaces __DEV__ with process.env.NODE_ENV !== 'production'", () => {
+    const { buildPluginsDefault } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(esmBuildPlugins).toContainEqual({
+    expect(buildPluginsDefault).toContainEqual({
       name: '@rollup/plugin-replace',
       calledWith: {
         __DEV__: "process.env.NODE_ENV !== 'production'",
@@ -55,26 +58,28 @@ describe('replaces dev mode code', () => {
   });
 
   test("dev build plugins replaces NODE_ENV with 'development'", () => {
-    const { devBuildPlugins } = createRollupConfig({
+    const { buildPluginsWithNodeEnvDevelopment } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(devBuildPlugins).toContainEqual({
+    expect(buildPluginsWithNodeEnvDevelopment).toContainEqual({
       name: '@rollup/plugin-replace',
       calledWith: { 'process.env.NODE_ENV': JSON.stringify('development') },
     });
   });
 
   test("prod build plugins replaces NODE_ENV with 'production'", () => {
-    const { prodBuildPlugins } = createRollupConfig({
+    const { buildPluginsWithNodeEnvProduction } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(prodBuildPlugins).toContainEqual({
+    expect(buildPluginsWithNodeEnvProduction).toContainEqual({
       name: '@rollup/plugin-replace',
       calledWith: { 'process.env.NODE_ENV': JSON.stringify('production') },
     });
@@ -84,6 +89,7 @@ describe('replaces dev mode code', () => {
 describe('umd build configuration', () => {
   test('umd package name', () => {
     const { umdNameForPkg } = createRollupConfig({
+      addUmdBuild: true,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: ['some-peer-dependency'],
@@ -97,6 +103,7 @@ describe('umd build configuration', () => {
       umdExternalDependencies,
       umdDependencyGlobals,
     } = createRollupConfig({
+      addUmdBuild: true,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: ['some-peer-dependency'],
@@ -113,6 +120,7 @@ describe('umd build configuration', () => {
       umdExternalDependencies,
       umdDependencyGlobals,
     } = createRollupConfig({
+      addUmdBuild: true,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: ['some-peer-dependency'],
@@ -131,83 +139,91 @@ describe('umd build configuration', () => {
 });
 
 describe('rollup plugins', () => {
-  test('esm build plugins with sideEffects: false', () => {
-    const { esmBuildPlugins } = createRollupConfig({
+  test('default build plugins with sideEffects: false', () => {
+    const { buildPluginsDefault } = createRollupConfig({
+      addUmdBuild: true,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: false,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(esmBuildPlugins).toMatchSnapshot();
+    expect(buildPluginsDefault).toMatchSnapshot();
   });
 
-  test('esm build plugins with sideEffects: true', () => {
-    const { esmBuildPlugins } = createRollupConfig({
+  test('default build plugins with sideEffects: true', () => {
+    const { buildPluginsDefault } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(esmBuildPlugins).toMatchSnapshot();
+    expect(buildPluginsDefault).toMatchSnapshot();
   });
 
   test('dev build plugins with sideEffects: false', () => {
-    const { devBuildPlugins } = createRollupConfig({
+    const { buildPluginsWithNodeEnvDevelopment } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: false,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(devBuildPlugins).toMatchSnapshot();
+    expect(buildPluginsWithNodeEnvDevelopment).toMatchSnapshot();
   });
 
   test('dev build plugins with sideEffects: true', () => {
-    const { devBuildPlugins } = createRollupConfig({
+    const { buildPluginsWithNodeEnvDevelopment } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(devBuildPlugins).toMatchSnapshot();
+    expect(buildPluginsWithNodeEnvDevelopment).toMatchSnapshot();
   });
 
   test('prod build plugins with sideEffects: false', () => {
-    const { prodBuildPlugins } = createRollupConfig({
+    const { buildPluginsWithNodeEnvProduction } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: false,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(prodBuildPlugins).toMatchSnapshot();
+    expect(buildPluginsWithNodeEnvProduction).toMatchSnapshot();
   });
 
   test('prod build plugins with sideEffects: true', () => {
-    const { prodBuildPlugins } = createRollupConfig({
+    const { buildPluginsWithNodeEnvProduction } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: true,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(prodBuildPlugins).toMatchSnapshot();
+    expect(buildPluginsWithNodeEnvProduction).toMatchSnapshot();
   });
 
-  test('output plugins', () => {
-    const { outputPlugins } = createRollupConfig({
+  test('output default plugins', () => {
+    const { outputPluginsDefault } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: false,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(outputPlugins).toMatchSnapshot();
+    expect(outputPluginsDefault).toMatchSnapshot();
   });
 
   test('output prod plugins', () => {
-    const { outputProdPlugins } = createRollupConfig({
+    const { outputPluginsProduction } = createRollupConfig({
+      addUmdBuild: false,
       kebabCasePkgName: 'test-package-name',
       pkgJsonSideEffects: false,
       pkgJsonPeerDependencyKeys: [],
     });
 
-    expect(outputProdPlugins).toMatchSnapshot();
+    expect(outputPluginsProduction).toMatchSnapshot();
   });
 });

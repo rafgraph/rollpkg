@@ -60,6 +60,9 @@ const rollpkg = async () => {
 
   const {
     watchMode,
+    tsconfigPath,
+    addUmdBuild,
+    includeBundlephobiaStats,
     entryFile,
     kebabCasePkgName,
     pkgJsonSideEffects,
@@ -76,6 +79,8 @@ const rollpkg = async () => {
 
   try {
     rollupConfiguration = createRollupConfig({
+      tsconfigPath,
+      addUmdBuild,
       kebabCasePkgName,
       pkgJsonSideEffects,
       pkgJsonPeerDependencyKeys,
@@ -92,11 +97,11 @@ const rollpkg = async () => {
   }
 
   const {
-    esmBuildPlugins,
-    devBuildPlugins,
-    prodBuildPlugins,
-    outputPlugins,
-    outputProdPlugins,
+    buildPluginsDefault,
+    buildPluginsWithNodeEnvDevelopment,
+    buildPluginsWithNodeEnvProduction,
+    outputPluginsDefault,
+    outputPluginsProduction,
     treeshakeOptions,
     umdNameForPkg,
     umdExternalDependencies,
@@ -113,9 +118,8 @@ const rollpkg = async () => {
       pkgJsonPeerDependencyKeys,
       entryFile,
       treeshakeOptions,
-      esmBuildPlugins,
-      devBuildPlugins,
-      outputPlugins,
+      buildPluginsDefault,
+      outputPluginsDefault,
     });
     return;
   }
@@ -123,7 +127,9 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // create rollup bundles
-  const createRollupBundlesMessage = 'Creating esm, cjs, umd builds';
+  const createRollupBundlesMessage = `Creating esm, cjs${
+    addUmdBuild ? ', umd' : ''
+  } builds`;
   let bundles;
 
   try {
@@ -133,9 +139,10 @@ const rollpkg = async () => {
       pkgJsonPeerDependencyKeys,
       umdExternalDependencies,
       treeshakeOptions,
-      esmBuildPlugins,
-      devBuildPlugins,
-      prodBuildPlugins,
+      buildPluginsDefault,
+      buildPluginsWithNodeEnvDevelopment,
+      buildPluginsWithNodeEnvProduction,
+      addUmdBuild,
     });
     await progressEstimator(bundles, createRollupBundlesMessage, {
       id: `${kebabCasePkgName}-${createRollupBundlesMessage}`,
@@ -159,8 +166,7 @@ const rollpkg = async () => {
   }
 
   const [
-    bundleEsm,
-    bundleCjsDev,
+    bundleDefault,
     bundleCjsProd,
     bundleUmdDev,
     bundleUmdProd,
@@ -169,19 +175,20 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // write rollup bundles
-  const writeRollupBundlesMessage = 'Writing esm, cjs, umd builds';
+  const writeRollupBundlesMessage = `Writing esm, cjs${
+    addUmdBuild ? ', umd' : ''
+  } builds`;
 
   try {
     const output = writeBundles({
       cwd,
       kebabCasePkgName,
-      bundleEsm,
-      bundleCjsDev,
+      bundleDefault,
       bundleCjsProd,
       bundleUmdDev,
       bundleUmdProd,
-      outputPlugins,
-      outputProdPlugins,
+      outputPluginsDefault,
+      outputPluginsProduction,
       umdNameForPkg,
       umdDependencyGlobals,
     });
@@ -205,23 +212,27 @@ const rollpkg = async () => {
 
   /////////////////////////////////////
   // calculate bundlephobia package stats
-  const bundlephobiaStatsMessage = 'Calculating Bundlephobia stats';
+  if (includeBundlephobiaStats) {
+    const bundlephobiaStatsMessage = 'Calculating Bundlephobia stats';
 
-  try {
-    const packageStats = calculateBundlephobiaStats({ cwd });
+    try {
+      const packageStats = calculateBundlephobiaStats({ cwd });
 
-    await progressEstimator(packageStats, bundlephobiaStatsMessage, {
-      id: `${kebabCasePkgName}-${bundlephobiaStatsMessage}`,
-    });
+      await progressEstimator(packageStats, bundlephobiaStatsMessage, {
+        id: `${kebabCasePkgName}-${bundlephobiaStatsMessage}`,
+      });
 
-    printBundlephobiaStats(await packageStats);
-  } catch (error) {
-    logError({
-      failedAt: bundlephobiaStatsMessage,
-      message: `Bundlephobia Error: ${errorAsObjectWithMessage(error).message}`,
-    });
-    // don' throw EXIT_ON_ERROR because the build has already succeeded
-    // and an error in stats calculation shouldn't cause `rollpkg build` to fail
+      printBundlephobiaStats(await packageStats);
+    } catch (error) {
+      logError({
+        failedAt: bundlephobiaStatsMessage,
+        message: `Bundlephobia Error: ${
+          errorAsObjectWithMessage(error).message
+        }`,
+      });
+      // don' throw EXIT_ON_ERROR because the build has already succeeded
+      // and an error in stats calculation shouldn't cause `rollpkg build` to fail
+    }
   }
   /////////////////////////////////////
 };

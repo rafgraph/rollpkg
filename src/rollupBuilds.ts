@@ -30,57 +30,68 @@ import { logTsError, logError } from './errorUtils';
 // create rollup config
 interface CreateRollupConfig {
   (input: {
+    tsconfigPath?: string;
+    addUmdBuild: boolean;
     kebabCasePkgName: string;
     pkgJsonSideEffects: boolean;
     pkgJsonPeerDependencyKeys: string[];
     pkgJsonUmdGlobalDependencies?: { [key: string]: string };
   }): {
-    esmBuildPlugins: Plugin[];
-    devBuildPlugins: Plugin[];
-    prodBuildPlugins: Plugin[];
-    outputPlugins: OutputPlugin[];
-    outputProdPlugins: OutputPlugin[];
+    buildPluginsDefault: Plugin[];
+    buildPluginsWithNodeEnvDevelopment: Plugin[];
+    buildPluginsWithNodeEnvProduction: Plugin[];
+    outputPluginsDefault: OutputPlugin[];
+    outputPluginsProduction: OutputPlugin[];
     treeshakeOptions: TreeshakingOptions;
-    umdNameForPkg: string;
-    umdExternalDependencies: string[];
-    umdDependencyGlobals: { [key: string]: string };
+    umdNameForPkg?: string;
+    umdExternalDependencies?: string[];
+    umdDependencyGlobals?: { [key: string]: string };
   };
 }
 
 export const createRollupConfig: CreateRollupConfig = ({
+  tsconfigPath,
+  addUmdBuild,
   kebabCasePkgName,
   pkgJsonSideEffects,
   pkgJsonPeerDependencyKeys,
   pkgJsonUmdGlobalDependencies,
 }) => {
-  const buildPlugins: Plugin[] = [
+  const buildPluginsDefault: Plugin[] = [
     resolveRollup(),
     commonjs(),
     json(),
     rollupTypescript({
       // verbosity: 3, // use to debug
-      tsconfigOverride: {
+      tsconfigDefaults: {
         compilerOptions: {
           // types: [] eliminates global type pollution in builds
           // and ensures that the only types allowed
           // are explicitly set in tsconfig or are imported into source files
           types: [],
+          // generate *.d.ts files by default
+          declaration: true,
+          // enforces convention that all files to be included in the build are in the src directory
+          // this doesn't prevent other non-build files like *.mock.ts from being outside the src directory
+          rootDir: './src',
+        },
+        // include the src directory by default
+        include: ['src'],
+      },
+      tsconfig: tsconfigPath,
+      tsconfigOverride: {
+        compilerOptions: {
           // rollup requires module to be es2015 or esnext
           module: 'esnext',
-          // always generate *.d.ts files
-          declaration: true,
           // always generate source maps which are used by rollup to create the actual source map
           // without this rollup creates blank source maps
           // note that the tsconfig "inlineSources" option has no effect on how rollup generates source maps
           // as rollup has it's own inline sources option, "sourcemapExcludeSources" which defaults to false
           sourceMap: true,
-          // enforces convention that all files to be included in the build are in the src directory
-          // this doesn't prevent other non-build files like *.mock.ts from being outside the src directory
-          rootDir: './src',
         },
-        // include the src directory and rollpkg types that stub process.env.NODE_ENV and __DEV__
+        // include rollpkg types that stub process.env.NODE_ENV and __DEV__
         // so they can be used without polluting the global type space with all node types etc
-        include: ['src', './node_modules/rollpkg/configs/types'],
+        include: ['./node_modules/rollpkg/configs/types'],
         // exclude tests, mocks and snapshots
         exclude: [
           '**/__tests__',
@@ -97,21 +108,19 @@ export const createRollupConfig: CreateRollupConfig = ({
     replace({ __DEV__: "process.env.NODE_ENV !== 'production'" }),
   ];
 
-  const esmBuildPlugins = buildPlugins;
-
-  const devBuildPlugins: Plugin[] = [
-    ...buildPlugins,
+  const buildPluginsWithNodeEnvDevelopment: Plugin[] = [
+    ...buildPluginsDefault,
     replace({ 'process.env.NODE_ENV': JSON.stringify('development') }),
   ];
 
-  const prodBuildPlugins: Plugin[] = [
-    ...buildPlugins,
+  const buildPluginsWithNodeEnvProduction: Plugin[] = [
+    ...buildPluginsDefault,
     replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
   ];
 
-  const outputPlugins: OutputPlugin[] = [];
+  const outputPluginsDefault: OutputPlugin[] = [];
 
-  const outputProdPlugins: OutputPlugin[] = [
+  const outputPluginsProduction: OutputPlugin[] = [
     terser({ format: { comments: false } }),
   ];
 
@@ -123,34 +132,39 @@ export const createRollupConfig: CreateRollupConfig = ({
     unknownGlobalSideEffects: pkgJsonSideEffects,
   };
 
-  // umdExternalDependencies is an array of external module ids that rollup
-  // will not in include in the build
-  const umdExternalDependencies = pkgJsonUmdGlobalDependencies
-    ? Object.keys(pkgJsonUmdGlobalDependencies)
-    : pkgJsonPeerDependencyKeys;
+  let umdExternalDependencies;
+  let umdDependencyGlobals: { [key: string]: string } | undefined;
+  let umdNameForPkg;
 
-  // umdDependencyGlobals is an object where the keys are the module ids (the umdExternalDependencies list)
-  // and the values are what those modules will be available in the global scope as
-  // for example { 'react-dom': 'ReactDOM' } because react-dom will be available on the window as ReactDOM
-  let umdDependencyGlobals: { [key: string]: string };
-  if (pkgJsonUmdGlobalDependencies) {
-    umdDependencyGlobals = pkgJsonUmdGlobalDependencies;
-  } else {
-    umdDependencyGlobals = {};
-    pkgJsonPeerDependencyKeys.forEach((peerDep) => {
-      umdDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
-        convertPkgNameToKebabCase(peerDep),
-      );
-    });
+  if (addUmdBuild) {
+    // umdExternalDependencies is an array of external module ids that rollup
+    // will not include in the build
+    umdExternalDependencies = pkgJsonUmdGlobalDependencies
+      ? Object.keys(pkgJsonUmdGlobalDependencies)
+      : pkgJsonPeerDependencyKeys;
+
+    // umdDependencyGlobals is an object where the keys are the module ids (the umdExternalDependencies list)
+    // and the values are what those modules will be available in the global scope as
+    // for example { 'react-dom': 'ReactDOM' } because react-dom will be available on the window as ReactDOM
+    if (pkgJsonUmdGlobalDependencies) {
+      umdDependencyGlobals = pkgJsonUmdGlobalDependencies;
+    } else {
+      pkgJsonPeerDependencyKeys.forEach((peerDep) => {
+        umdDependencyGlobals = {};
+        umdDependencyGlobals[peerDep] = convertKebabCaseToPascalCase(
+          convertPkgNameToKebabCase(peerDep),
+        );
+      });
+    }
+    umdNameForPkg = convertKebabCaseToPascalCase(kebabCasePkgName);
   }
-  const umdNameForPkg = convertKebabCaseToPascalCase(kebabCasePkgName);
 
   return {
-    esmBuildPlugins,
-    devBuildPlugins,
-    prodBuildPlugins,
-    outputPlugins,
-    outputProdPlugins,
+    buildPluginsDefault,
+    buildPluginsWithNodeEnvDevelopment,
+    buildPluginsWithNodeEnvProduction,
+    outputPluginsDefault,
+    outputPluginsProduction,
     treeshakeOptions,
     umdNameForPkg,
     umdExternalDependencies,
@@ -168,9 +182,8 @@ interface RollupWatch {
     pkgJsonPeerDependencyKeys: string[];
     entryFile: string;
     treeshakeOptions: TreeshakingOptions;
-    esmBuildPlugins: Plugin[];
-    devBuildPlugins: Plugin[];
-    outputPlugins: OutputPlugin[];
+    buildPluginsDefault: Plugin[];
+    outputPluginsDefault: OutputPlugin[];
   }): void;
 }
 
@@ -180,9 +193,8 @@ export const rollupWatch: RollupWatch = ({
   pkgJsonPeerDependencyKeys,
   entryFile,
   treeshakeOptions,
-  esmBuildPlugins,
-  devBuildPlugins,
-  outputPlugins,
+  buildPluginsDefault,
+  outputPluginsDefault,
 }) => {
   // exit 0 from watch mode on ctrl-c (SIGINT) etc so can chain npm scripts: rollpkg watch && ...
   // the ... will run after rollpkg watch only if it exits 0
@@ -199,30 +211,17 @@ export const rollupWatch: RollupWatch = ({
     external: [...pkgJsonDependencyKeys, ...pkgJsonPeerDependencyKeys],
     input: entryFile,
     treeshake: treeshakeOptions,
-    plugins: esmBuildPlugins,
+    plugins: buildPluginsDefault,
     output: {
       file: `dist/${kebabCasePkgName}.esm.js`,
       format: 'esm',
       sourcemap: true,
-      plugins: outputPlugins,
-    },
-  };
-
-  const cjsDevWatchOptions: RollupWatchOptions = {
-    external: [...pkgJsonDependencyKeys, ...pkgJsonPeerDependencyKeys],
-    input: entryFile,
-    treeshake: treeshakeOptions,
-    plugins: devBuildPlugins,
-    output: {
-      file: `dist/${kebabCasePkgName}.cjs.js`,
-      format: 'cjs',
-      sourcemap: true,
-      plugins: outputPlugins,
+      plugins: outputPluginsDefault,
     },
   };
 
   // in watch mode only create esm and cjs dev builds
-  const watcher = watch([esmWatchOptions, cjsDevWatchOptions]);
+  const watcher = watch(esmWatchOptions);
 
   const earth = ['🌎', '🌏', '🌍'];
   let currentEarth = 2;
@@ -270,14 +269,13 @@ interface CreateBundles {
     entryFile: string;
     pkgJsonDependencyKeys: string[];
     pkgJsonPeerDependencyKeys: string[];
-    umdExternalDependencies: string[];
+    umdExternalDependencies?: string[];
     treeshakeOptions: TreeshakingOptions;
-    esmBuildPlugins: Plugin[];
-    devBuildPlugins: Plugin[];
-    prodBuildPlugins: Plugin[];
-  }): Promise<
-    [RollupBuild, RollupBuild, RollupBuild, RollupBuild, RollupBuild]
-  >;
+    buildPluginsDefault: Plugin[];
+    buildPluginsWithNodeEnvDevelopment: Plugin[];
+    buildPluginsWithNodeEnvProduction: Plugin[];
+    addUmdBuild: boolean;
+  }): Promise<[RollupBuild, RollupBuild, RollupBuild?, RollupBuild?]>;
 }
 
 export const createBundles: CreateBundles = ({
@@ -286,25 +284,18 @@ export const createBundles: CreateBundles = ({
   pkgJsonPeerDependencyKeys,
   umdExternalDependencies,
   treeshakeOptions,
-  esmBuildPlugins,
-  devBuildPlugins,
-  prodBuildPlugins,
+  buildPluginsDefault,
+  buildPluginsWithNodeEnvDevelopment,
+  buildPluginsWithNodeEnvProduction,
+  addUmdBuild,
 }) =>
   Promise.all([
-    // esm build
+    // default bundle - used for esm and cjs dev builds
     rollup({
       external: [...pkgJsonDependencyKeys, ...pkgJsonPeerDependencyKeys],
       input: entryFile,
       treeshake: treeshakeOptions,
-      plugins: esmBuildPlugins,
-    }),
-
-    // cjs development build
-    rollup({
-      external: [...pkgJsonDependencyKeys, ...pkgJsonPeerDependencyKeys],
-      input: entryFile,
-      treeshake: treeshakeOptions,
-      plugins: devBuildPlugins,
+      plugins: buildPluginsDefault,
     }),
 
     // cjs production build
@@ -312,24 +303,28 @@ export const createBundles: CreateBundles = ({
       external: [...pkgJsonDependencyKeys, ...pkgJsonPeerDependencyKeys],
       input: entryFile,
       treeshake: treeshakeOptions,
-      plugins: prodBuildPlugins,
+      plugins: buildPluginsWithNodeEnvProduction,
     }),
 
     // umd development build
-    rollup({
-      external: umdExternalDependencies,
-      input: entryFile,
-      treeshake: treeshakeOptions,
-      plugins: devBuildPlugins,
-    }),
+    addUmdBuild
+      ? rollup({
+          external: umdExternalDependencies,
+          input: entryFile,
+          treeshake: treeshakeOptions,
+          plugins: buildPluginsWithNodeEnvDevelopment,
+        })
+      : undefined,
 
     // umd production build
-    rollup({
-      external: umdExternalDependencies,
-      input: entryFile,
-      treeshake: treeshakeOptions,
-      plugins: prodBuildPlugins,
-    }),
+    addUmdBuild
+      ? rollup({
+          external: umdExternalDependencies,
+          input: entryFile,
+          treeshake: treeshakeOptions,
+          plugins: buildPluginsWithNodeEnvProduction,
+        })
+      : undefined,
   ]);
 /////////////////////////////////////
 
@@ -339,30 +334,35 @@ interface WriteBundles {
   (input: {
     cwd: string;
     kebabCasePkgName: string;
-    bundleEsm: RollupBuild;
-    bundleCjsDev: RollupBuild;
+    bundleDefault: RollupBuild;
     bundleCjsProd: RollupBuild;
-    bundleUmdDev: RollupBuild;
-    bundleUmdProd: RollupBuild;
-    outputPlugins: OutputPlugin[];
-    outputProdPlugins: OutputPlugin[];
-    umdNameForPkg: string;
-    umdDependencyGlobals: { [key: string]: string };
+    bundleUmdDev?: RollupBuild;
+    bundleUmdProd?: RollupBuild;
+    outputPluginsDefault: OutputPlugin[];
+    outputPluginsProduction: OutputPlugin[];
+    umdNameForPkg?: string;
+    umdDependencyGlobals?: { [key: string]: string };
   }): Promise<
-    [RollupOutput, RollupOutput, RollupOutput, RollupOutput, RollupOutput, void]
+    [
+      RollupOutput,
+      RollupOutput,
+      RollupOutput,
+      void,
+      RollupOutput?,
+      RollupOutput?,
+    ]
   >;
 }
 
 export const writeBundles: WriteBundles = ({
   cwd,
   kebabCasePkgName,
-  bundleEsm,
-  bundleCjsDev,
+  bundleDefault,
   bundleCjsProd,
   bundleUmdDev,
   bundleUmdProd,
-  outputPlugins,
-  outputProdPlugins,
+  outputPluginsDefault,
+  outputPluginsProduction,
   umdNameForPkg,
   umdDependencyGlobals,
 }) => {
@@ -378,57 +378,63 @@ if (process.env.NODE_ENV === 'production') {
 `;
 
   return Promise.all([
-    bundleEsm.write({
+    // esm build
+    bundleDefault.write({
       file: `dist/${kebabCasePkgName}.esm.js`,
       format: 'esm',
       sourcemap: true,
       sourcemapExcludeSources: false,
-      plugins: outputPlugins,
+      plugins: outputPluginsDefault,
     }),
 
-    bundleCjsDev.write({
+    // cjs development build
+    bundleDefault.write({
       file: `dist/${kebabCasePkgName}.cjs.development.js`,
       format: 'cjs',
       sourcemap: true,
       sourcemapExcludeSources: false,
-      plugins: outputPlugins,
+      plugins: outputPluginsDefault,
     }),
 
+    // cjs production build
     bundleCjsProd.write({
       file: `dist/${kebabCasePkgName}.cjs.production.js`,
       format: 'cjs',
-      compact: true,
       sourcemap: true,
       sourcemapExcludeSources: false,
-      plugins: outputProdPlugins,
+      plugins: outputPluginsProduction,
     }),
 
-    bundleUmdDev.write({
-      file: `dist/${kebabCasePkgName}.umd.development.js`,
-      format: 'umd',
-      name: umdNameForPkg,
-      globals: umdDependencyGlobals,
-      sourcemap: true,
-      sourcemapExcludeSources: false,
-      plugins: outputPlugins,
-    }),
-
-    bundleUmdProd.write({
-      file: `dist/${kebabCasePkgName}.umd.production.js`,
-      format: 'umd',
-      compact: true,
-      name: umdNameForPkg,
-      globals: umdDependencyGlobals,
-      sourcemap: true,
-      sourcemapExcludeSources: false,
-      plugins: outputProdPlugins,
-    }),
-
+    // cjs entry file
     fs.writeFile(
       resolve(cwd, 'dist', `${kebabCasePkgName}.cjs.js`),
       cjsEntryContent,
       'utf8',
     ),
+
+    bundleUmdDev
+      ? bundleUmdDev.write({
+          file: `dist/${kebabCasePkgName}.umd.development.js`,
+          format: 'umd',
+          name: umdNameForPkg,
+          globals: umdDependencyGlobals,
+          sourcemap: true,
+          sourcemapExcludeSources: false,
+          plugins: outputPluginsDefault,
+        })
+      : undefined,
+
+    bundleUmdProd
+      ? bundleUmdProd.write({
+          file: `dist/${kebabCasePkgName}.umd.production.js`,
+          format: 'umd',
+          name: umdNameForPkg,
+          globals: umdDependencyGlobals,
+          sourcemap: true,
+          sourcemapExcludeSources: false,
+          plugins: outputPluginsProduction,
+        })
+      : undefined,
   ]);
 };
 /////////////////////////////////////
