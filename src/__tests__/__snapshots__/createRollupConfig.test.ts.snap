@@ -19,9 +19,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-        "include": Array [
-          "src",
-        ],
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
@@ -72,9 +69,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-        "include": Array [
-          "src",
-        ],
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
@@ -125,9 +119,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-        "include": Array [
-          "src",
-        ],
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
@@ -184,9 +175,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-        "include": Array [
-          "src",
-        ],
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
@@ -258,9 +246,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-        "include": Array [
-          "src",
-        ],
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {
@@ -317,9 +302,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-        "include": Array [
-          "src",
-        ],
       },
       "tsconfigOverride": Object {
         "compilerOptions": Object {

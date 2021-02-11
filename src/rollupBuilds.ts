@@ -76,8 +76,6 @@ export const createRollupConfig: CreateRollupConfig = ({
           // this doesn't prevent other non-build files like *.mock.ts from being outside the src directory
           rootDir: './src',
         },
-        // include the src directory by default
-        include: ['src'],
       },
       tsconfig: tsconfigPath,
       tsconfigOverride: {
