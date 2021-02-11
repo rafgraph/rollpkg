@@ -283,7 +283,7 @@ The Rollpkg default is to compile your code to `ES2018` which is supported by al
 
 To control how your code is compiled and what JS APIs are available at runtime use the [`target`](https://www.typescriptlang.org/tsconfig#target) and [`lib`](https://www.typescriptlang.org/tsconfig#lib) options in your `tsconfig`. The `target` option specifies the ECMAScript version that your code is compiled to (`ES5`, `ES2018`, etc). The `lib` option specifies the JS APIs that will be available at runtime, which is needed for using JS APIs that can't be compiled to the specified `target`. For example, `array.includes` and the `Promise` API cannot be compiled to `ES5` but you may find it necessary to use them in your code (note that all JS APIs in your code will need to be available in the browser, either supported natively or provided by a polyfill).
 
-For example, let's say your `target` is `ES5` and need to use the `Promise` API, your `tsconfig.json` would look like this:
+For example, let's say your `target` is `ES5` and you need to use the `Promise` API, your `tsconfig.json` would look like this:
 
 > Note that when using the `lib` option you need to specify _all_ available JS APIs, including the base `ES5` APIs and `DOM` APIs.
 

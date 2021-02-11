@@ -19,12 +19,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-      },
-      "tsconfigOverride": Object {
-        "compilerOptions": Object {
-          "module": "ESNext",
-          "sourceMap": true,
-        },
         "exclude": Array [
           "**/__tests__",
           "**/__mocks__",
@@ -34,8 +28,15 @@ Array [
           "**/*.mock.*",
         ],
         "include": Array [
+          "src",
           "./node_modules/rollpkg/configs/types",
         ],
+      },
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "module": "ESNext",
+          "sourceMap": true,
+        },
       },
     },
     "name": "rollup-plugin-typescript2",
@@ -69,12 +70,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-      },
-      "tsconfigOverride": Object {
-        "compilerOptions": Object {
-          "module": "ESNext",
-          "sourceMap": true,
-        },
         "exclude": Array [
           "**/__tests__",
           "**/__mocks__",
@@ -84,8 +79,15 @@ Array [
           "**/*.mock.*",
         ],
         "include": Array [
+          "src",
           "./node_modules/rollpkg/configs/types",
         ],
+      },
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "module": "ESNext",
+          "sourceMap": true,
+        },
       },
     },
     "name": "rollup-plugin-typescript2",
@@ -119,12 +121,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-      },
-      "tsconfigOverride": Object {
-        "compilerOptions": Object {
-          "module": "ESNext",
-          "sourceMap": true,
-        },
         "exclude": Array [
           "**/__tests__",
           "**/__mocks__",
@@ -134,8 +130,15 @@ Array [
           "**/*.mock.*",
         ],
         "include": Array [
+          "src",
           "./node_modules/rollpkg/configs/types",
         ],
+      },
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "module": "ESNext",
+          "sourceMap": true,
+        },
       },
     },
     "name": "rollup-plugin-typescript2",
@@ -175,12 +178,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-      },
-      "tsconfigOverride": Object {
-        "compilerOptions": Object {
-          "module": "ESNext",
-          "sourceMap": true,
-        },
         "exclude": Array [
           "**/__tests__",
           "**/__mocks__",
@@ -190,8 +187,15 @@ Array [
           "**/*.mock.*",
         ],
         "include": Array [
+          "src",
           "./node_modules/rollpkg/configs/types",
         ],
+      },
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "module": "ESNext",
+          "sourceMap": true,
+        },
       },
     },
     "name": "rollup-plugin-typescript2",
@@ -246,12 +250,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-      },
-      "tsconfigOverride": Object {
-        "compilerOptions": Object {
-          "module": "ESNext",
-          "sourceMap": true,
-        },
         "exclude": Array [
           "**/__tests__",
           "**/__mocks__",
@@ -261,8 +259,15 @@ Array [
           "**/*.mock.*",
         ],
         "include": Array [
+          "src",
           "./node_modules/rollpkg/configs/types",
         ],
+      },
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "module": "ESNext",
+          "sourceMap": true,
+        },
       },
     },
     "name": "rollup-plugin-typescript2",
@@ -302,12 +307,6 @@ Array [
           "target": "ES2018",
           "types": Array [],
         },
-      },
-      "tsconfigOverride": Object {
-        "compilerOptions": Object {
-          "module": "ESNext",
-          "sourceMap": true,
-        },
         "exclude": Array [
           "**/__tests__",
           "**/__mocks__",
@@ -317,8 +316,15 @@ Array [
           "**/*.mock.*",
         ],
         "include": Array [
+          "src",
           "./node_modules/rollpkg/configs/types",
         ],
+      },
+      "tsconfigOverride": Object {
+        "compilerOptions": Object {
+          "module": "ESNext",
+          "sourceMap": true,
+        },
       },
     },
     "name": "rollup-plugin-typescript2",

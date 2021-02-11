@@ -76,6 +76,18 @@ export const createRollupConfig: CreateRollupConfig = ({
           // this doesn't prevent other non-build files like *.mock.ts from being outside the src directory
           rootDir: './src',
         },
+        // include rollpkg types that stub process.env.NODE_ENV and __DEV__
+        // so they can be used without polluting the global type space with all node types etc
+        include: ['src', './node_modules/rollpkg/configs/types'],
+        // exclude tests, mocks and snapshots
+        exclude: [
+          '**/__tests__',
+          '**/__mocks__',
+          '**/__snapshots__',
+          '**/*.test.*',
+          '**/*.spec.*',
+          '**/*.mock.*',
+        ],
       },
       tsconfig: tsconfigPath,
       tsconfigOverride: {
@@ -88,18 +100,6 @@ export const createRollupConfig: CreateRollupConfig = ({
           // as rollup has it's own inline sources option, "sourcemapExcludeSources" which defaults to false
           sourceMap: true,
         },
-        // include rollpkg types that stub process.env.NODE_ENV and __DEV__
-        // so they can be used without polluting the global type space with all node types etc
-        include: ['./node_modules/rollpkg/configs/types'],
-        // exclude tests, mocks and snapshots
-        exclude: [
-          '**/__tests__',
-          '**/__mocks__',
-          '**/__snapshots__',
-          '**/*.test.*',
-          '**/*.spec.*',
-          '**/*.mock.*',
-        ],
       },
       include: ['**/*.ts+(|x)', '**/*.js+(|x)'],
     }),
