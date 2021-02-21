@@ -2,7 +2,12 @@
 
 exports[`rollup plugins default build plugins with sideEffects: false 1`] = `
 Array [
-  "@rollup/plugin-resolve",
+  Object {
+    "calledWith": Object {
+      "preferBuiltins": true,
+    },
+    "name": "@rollup/plugin-resolve",
+  },
   "@rollup/plugin-commonjs",
   "@rollup/plugin-json",
   Object {
@@ -53,7 +58,12 @@ Array [
 
 exports[`rollup plugins default build plugins with sideEffects: true 1`] = `
 Array [
-  "@rollup/plugin-resolve",
+  Object {
+    "calledWith": Object {
+      "preferBuiltins": true,
+    },
+    "name": "@rollup/plugin-resolve",
+  },
   "@rollup/plugin-commonjs",
   "@rollup/plugin-json",
   Object {
@@ -104,7 +114,12 @@ Array [
 
 exports[`rollup plugins dev build plugins with sideEffects: false 1`] = `
 Array [
-  "@rollup/plugin-resolve",
+  Object {
+    "calledWith": Object {
+      "preferBuiltins": true,
+    },
+    "name": "@rollup/plugin-resolve",
+  },
   "@rollup/plugin-commonjs",
   "@rollup/plugin-json",
   Object {
@@ -161,7 +176,12 @@ Array [
 
 exports[`rollup plugins dev build plugins with sideEffects: true 1`] = `
 Array [
-  "@rollup/plugin-resolve",
+  Object {
+    "calledWith": Object {
+      "preferBuiltins": true,
+    },
+    "name": "@rollup/plugin-resolve",
+  },
   "@rollup/plugin-commonjs",
   "@rollup/plugin-json",
   Object {
@@ -233,7 +253,12 @@ Array [
 
 exports[`rollup plugins prod build plugins with sideEffects: false 1`] = `
 Array [
-  "@rollup/plugin-resolve",
+  Object {
+    "calledWith": Object {
+      "preferBuiltins": true,
+    },
+    "name": "@rollup/plugin-resolve",
+  },
   "@rollup/plugin-commonjs",
   "@rollup/plugin-json",
   Object {
@@ -290,7 +315,12 @@ Array [
 
 exports[`rollup plugins prod build plugins with sideEffects: true 1`] = `
 Array [
-  "@rollup/plugin-resolve",
+  Object {
+    "calledWith": Object {
+      "preferBuiltins": true,
+    },
+    "name": "@rollup/plugin-resolve",
+  },
   "@rollup/plugin-commonjs",
   "@rollup/plugin-json",
   Object {

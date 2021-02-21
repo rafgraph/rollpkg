@@ -10,7 +10,7 @@ import {
   RollupBuild,
   RollupOutput,
 } from 'rollup';
-import resolveRollup from '@rollup/plugin-node-resolve';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import rollupTypescript from 'rollup-plugin-typescript2';
@@ -58,7 +58,7 @@ export const createRollupConfig: CreateRollupConfig = ({
   pkgJsonUmdGlobalDependencies,
 }) => {
   const buildPluginsDefault: Plugin[] = [
-    resolveRollup(),
+    nodeResolve({ preferBuiltins: true }),
     commonjs(),
     json(),
     rollupTypescript({
