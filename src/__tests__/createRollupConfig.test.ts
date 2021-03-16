@@ -53,6 +53,7 @@ describe('replaces dev mode code', () => {
       name: '@rollup/plugin-replace',
       calledWith: {
         __DEV__: "process.env.NODE_ENV !== 'production'",
+        preventAssignment: true,
       },
     });
   });
@@ -67,7 +68,10 @@ describe('replaces dev mode code', () => {
 
     expect(buildPluginsWithNodeEnvDevelopment).toContainEqual({
       name: '@rollup/plugin-replace',
-      calledWith: { 'process.env.NODE_ENV': JSON.stringify('development') },
+      calledWith: {
+        'process.env.NODE_ENV': JSON.stringify('development'),
+        preventAssignment: true,
+      },
     });
   });
 
@@ -81,7 +85,10 @@ describe('replaces dev mode code', () => {
 
     expect(buildPluginsWithNodeEnvProduction).toContainEqual({
       name: '@rollup/plugin-replace',
-      calledWith: { 'process.env.NODE_ENV': JSON.stringify('production') },
+      calledWith: {
+        'process.env.NODE_ENV': JSON.stringify('production'),
+        preventAssignment: true,
+      },
     });
   });
 });

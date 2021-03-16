@@ -104,17 +104,26 @@ export const createRollupConfig: CreateRollupConfig = ({
       include: ['**/*.ts+(|x)', '**/*.js+(|x)'],
     }),
     sourcemaps(),
-    replace({ __DEV__: "process.env.NODE_ENV !== 'production'" }),
+    replace({
+      __DEV__: "process.env.NODE_ENV !== 'production'",
+      preventAssignment: true,
+    }),
   ];
 
   const buildPluginsWithNodeEnvDevelopment: Plugin[] = [
     ...buildPluginsDefault,
-    replace({ 'process.env.NODE_ENV': JSON.stringify('development') }),
+    replace({
+      'process.env.NODE_ENV': JSON.stringify('development'),
+      preventAssignment: true,
+    }),
   ];
 
   const buildPluginsWithNodeEnvProduction: Plugin[] = [
     ...buildPluginsDefault,
-    replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
+    replace({
+      'process.env.NODE_ENV': JSON.stringify('production'),
+      preventAssignment: true,
+    }),
   ];
 
   const outputPluginsDefault: OutputPlugin[] = [];

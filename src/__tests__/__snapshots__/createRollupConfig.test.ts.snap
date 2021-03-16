@@ -50,6 +50,7 @@ Array [
   Object {
     "calledWith": Object {
       "__DEV__": "process.env.NODE_ENV !== 'production'",
+      "preventAssignment": true,
     },
     "name": "@rollup/plugin-replace",
   },
@@ -106,6 +107,7 @@ Array [
   Object {
     "calledWith": Object {
       "__DEV__": "process.env.NODE_ENV !== 'production'",
+      "preventAssignment": true,
     },
     "name": "@rollup/plugin-replace",
   },
@@ -162,11 +164,13 @@ Array [
   Object {
     "calledWith": Object {
       "__DEV__": "process.env.NODE_ENV !== 'production'",
+      "preventAssignment": true,
     },
     "name": "@rollup/plugin-replace",
   },
   Object {
     "calledWith": Object {
+      "preventAssignment": true,
       "process.env.NODE_ENV": "\\"development\\"",
     },
     "name": "@rollup/plugin-replace",
@@ -224,11 +228,13 @@ Array [
   Object {
     "calledWith": Object {
       "__DEV__": "process.env.NODE_ENV !== 'production'",
+      "preventAssignment": true,
     },
     "name": "@rollup/plugin-replace",
   },
   Object {
     "calledWith": Object {
+      "preventAssignment": true,
       "process.env.NODE_ENV": "\\"development\\"",
     },
     "name": "@rollup/plugin-replace",
@@ -301,11 +307,13 @@ Array [
   Object {
     "calledWith": Object {
       "__DEV__": "process.env.NODE_ENV !== 'production'",
+      "preventAssignment": true,
     },
     "name": "@rollup/plugin-replace",
   },
   Object {
     "calledWith": Object {
+      "preventAssignment": true,
       "process.env.NODE_ENV": "\\"production\\"",
     },
     "name": "@rollup/plugin-replace",
@@ -363,11 +371,13 @@ Array [
   Object {
     "calledWith": Object {
       "__DEV__": "process.env.NODE_ENV !== 'production'",
+      "preventAssignment": true,
     },
     "name": "@rollup/plugin-replace",
   },
   Object {
     "calledWith": Object {
+      "preventAssignment": true,
       "process.env.NODE_ENV": "\\"production\\"",
     },
     "name": "@rollup/plugin-replace",
