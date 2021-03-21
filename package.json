@@ -1,6 +1,6 @@
 {
   "name": "rollpkg",
-  "version": "0.5.1-dev.0",
+  "version": "0.5.1",
   "description": "Zero config solution for building packages with Rollup and TypeScript.",
   "bin": {
     "rollpkg": "dist/cli.js"
