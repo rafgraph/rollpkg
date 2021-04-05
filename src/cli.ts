@@ -229,6 +229,7 @@ const rollpkg = async () => {
         message: `Bundlephobia Error: ${
           errorAsObjectWithMessage(error).message
         }`,
+        fullError: error,
       });
       // don' throw EXIT_ON_ERROR because the build has already succeeded
       // and an error in stats calculation shouldn't cause `rollpkg build` to fail
