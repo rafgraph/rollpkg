@@ -47,7 +47,7 @@ export const calculateBundlephobiaStats: CalculateBundlephobiaStats = async ({
   const consoleFunctions = silenceConsole();
 
   try {
-    const packageStats = await getPackageStats(cwd);
+    const packageStats = await getPackageStats(cwd, {});
     reinstateConsole(consoleFunctions);
     return packageStats;
   } catch (error) {
