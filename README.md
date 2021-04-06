@@ -166,8 +166,8 @@ This includes the optional [Rollpkg default configs](#using-default-configs-opti
   },
   "files": ["dist"],
   "devDependencies": {
-    "rollpkg": "^0.4.0",
-    "typescript": "^4.1.4"
+    "rollpkg": "^0.5.5",
+    "typescript": "^4.2.3"
   },
   "prettier": "rollpkg/configs/prettier.json",
   "eslintConfig": {
