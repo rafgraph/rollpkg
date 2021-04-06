@@ -14,6 +14,8 @@
 
 **For an example package see `rollpkg-example-package`: [package repo](https://github.com/rafgraph/rollpkg-example-package), and [built and published code](https://unpkg.com/browse/rollpkg-example-package/).**
 
+Used by: [`react-interactive`](https://github.com/rafgraph/react-interactive), [`detect-it`](https://github.com/rafgraph/detect-it), [`event-from`](https://github.com/rafgraph/event-from), [`react-router-hash-link`](https://github.com/rafgraph/react-router-hash-link), [`fscreen`](https://github.com/rafgraph/fscreen), and others.
+
 ---
 
 [Setup](#setup-rollpkg) ⚡️ [`package.json`](#fully-setup-example-packagejson) ⚡️ [Build options](#build-options-and-info) ⚡️ [Default configs](#using-default-configs-optional) ⚡️ [🚫 TS type pollution](#rollpkgs-approach-to-typescripts-global-type-pollution) ⚡️ [FAQ](#faq) ⚡️ [Compare to TSdx](#rollpkg-compared-to-tsdx)
