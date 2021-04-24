@@ -1,7 +1,16 @@
-import { getPackageStats } from 'package-build-stats';
 import prettyBytes from 'pretty-bytes';
 import chalk from 'chalk';
 import { PromiseValue } from 'type-fest'; // TODO use Awaited<..> when TypeScript v4.1 is released
+
+type GetPackageStats = typeof import('package-build-stats').getPackageStats;
+type PackageStats = PromiseValue<ReturnType<GetPackageStats>> | undefined;
+
+let getPackageStats: GetPackageStats | undefined;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  ({ getPackageStats } = require('package-build-stats'));
+  // eslint-disable-next-line no-empty
+} catch {}
 
 /////////////////////////////////////
 // hack to prevent bundlephobia getPackageStats() from printing to the console
@@ -38,12 +47,14 @@ const reinstateConsole: (consoleFunctions: ConsoleFunctions) => void = (
 /////////////////////////////////////
 // calculate bundlephobia stats
 interface CalculateBundlephobiaStats {
-  (input: { cwd: string }): ReturnType<typeof getPackageStats>;
+  (input: { cwd: string }): Promise<PackageStats>;
 }
 
 export const calculateBundlephobiaStats: CalculateBundlephobiaStats = async ({
   cwd,
 }) => {
+  if (!getPackageStats) return;
+
   const consoleFunctions = silenceConsole();
 
   try {
@@ -60,12 +71,20 @@ export const calculateBundlephobiaStats: CalculateBundlephobiaStats = async ({
 /////////////////////////////////////
 // print bundlephobia stats
 interface PrintBundlephobiaStats {
-  (packageStats: PromiseValue<ReturnType<typeof getPackageStats>>): void;
+  (packageStats: PackageStats): void;
 }
 
 export const printBundlephobiaStats: PrintBundlephobiaStats = (
   packageStats,
 ) => {
+  if (!packageStats) {
+    console.log('Warning: `package-build-stats` is not installed.');
+    console.log(
+      'Either include `--noStats` in build args or install the optional dependency with `npm i`.',
+    );
+    return;
+  }
+
   // hex #00de6d is to match color used by progress estimator for ✓
   // https://github.com/bvaughn/progress-estimator/blob/master/src/theme.js#L18
   const logLine = (text: string, emptyLineAbove?: boolean) => {
