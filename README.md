@@ -203,7 +203,7 @@ Rollpkg uses the TypeScript compiler to transform your code to `ES2018` (default
 - `rollpkg build`
   - For most use cases no options are needed, just run the `rollpkg build` command. It creates `esm` and `cjs` builds with source maps and `*.d.ts` type files.
 - `rollpkg build --tsconfig ./path/to/tsconfig.build.json`
-  - You can specify a custom path or name for your `tsconfig` if needed. By default Rollpkg will look in the root of your project for a `tsconfig.json` file.
+  - You can specify a custom path or name for your `tsconfig` if needed. This option also works in watch mode with `rollpkg watch`. By default Rollpkg will look in the root of your project for a `tsconfig.json` file.
 - `rollpkg build --addUmdBuild`
   - By default `rollpkg build` only creates `esm` and `cjs` builds, use this option to also create `umd` builds.
 - `rollpkg build --noStats`
@@ -248,6 +248,7 @@ Rollpkg uses the TypeScript compiler to transform your code to `ES2018` (default
 - Only creates the `esm` build so rebuilds are lightning quick.
 - Use `ctrl c` to exit watch mode.
 - Watch mode always exits `0` (non-error state) so you can chain commands in npm scripts, for example `rollpkg watch && npm run ...` (if watch mode didn't exit `0`, then `npm run ...` would never run).
+- Can specify a custom name or path for your `tsconfig` using `rollpkg watch --tsconfig ./path/to/tsconfig.build.json`
 
 ---
 
