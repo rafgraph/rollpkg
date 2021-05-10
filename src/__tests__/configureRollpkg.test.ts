@@ -47,7 +47,41 @@ describe('fails with incorrect configuration', () => {
         cwd: '/',
       }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"rollpkg requires a \\"build\\" or \\"watch\\" command with no arguments, received: \\"\\""`,
+      `"rollpkg requires a \\"build\\" or \\"watch\\" command, received: \\"\\""`,
+    );
+  });
+
+  test('fails with "watch" command and "--addUmdBuild" options', async () => {
+    mockFs({
+      '/package.json': JSON.stringify(createTestPackageJson()),
+      '/tsconfig.json': '',
+      '/src/index.ts': '',
+    });
+
+    await expect(
+      checkInvariantsAndGetConfiguration({
+        args: ['watch', '--addUmdBuild'],
+        cwd: '/',
+      }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"--addUmdBuild option is not valid in watch mode (only the esm build is created in watch mode)"`,
+    );
+  });
+
+  test('fails with "watch" command and "--noStats" options', async () => {
+    mockFs({
+      '/package.json': JSON.stringify(createTestPackageJson()),
+      '/tsconfig.json': '',
+      '/src/index.ts': '',
+    });
+
+    await expect(
+      checkInvariantsAndGetConfiguration({
+        args: ['watch', '--noStats'],
+        cwd: '/',
+      }),
+    ).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"--noStats option is not valid in watch mode (stats are never calculated in watch mode)"`,
     );
   });
 

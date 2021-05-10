@@ -31,7 +31,7 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
 }) => {
   invariant(
     args[0] === 'build' || args[0] === 'watch',
-    `rollpkg requires a "build" or "watch" command with no arguments, received: "${args.join(
+    `rollpkg requires a "build" or "watch" command, received: "${args.join(
       ' ',
     )}"`,
   );
@@ -50,7 +50,16 @@ export const checkInvariantsAndGetConfiguration: ConfigureRollpkg = async ({
   }
 
   const addUmdBuild = args.includes('--addUmdBuild');
+  invariant(
+    !watchMode || (watchMode && !addUmdBuild),
+    '--addUmdBuild option is not valid in watch mode (only the esm build is created in watch mode)',
+  );
+
   const includeBundlephobiaStats = !args.includes('--noStats');
+  invariant(
+    !watchMode || (watchMode && includeBundlephobiaStats),
+    '--noStats option is not valid in watch mode (stats are never calculated in watch mode)',
+  );
 
   interface PkgJson extends PackageJson {
     umdGlobalDependencies?: { [key: string]: string };
