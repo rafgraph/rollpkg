@@ -11,7 +11,7 @@ import {
   createBundles,
   writeBundles,
 } from './rollupBuilds';
-import { progressEstimatorBuilder, cleanDist } from './utils';
+import { progressEstimator, cleanDist } from './utils';
 import {
   EXIT_ON_ERROR,
   errorAsObjectWithMessage,
@@ -24,8 +24,6 @@ const rollpkg = async () => {
   /////////////////////////////////////
   // clean dist folder
   const cleanDistMessage = 'Cleaning dist folder';
-  const progressEstimator = await progressEstimatorBuilder();
-
   try {
     const clean = cleanDist();
     await progressEstimator(clean, cleanDistMessage);

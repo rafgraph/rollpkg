@@ -1,23 +1,15 @@
 import * as fs from 'fs-extra';
-import { resolve, join } from 'path';
-import * as os from 'os';
+import { resolve } from 'path';
 import * as readline from 'readline';
-import createProgressEstimator, { ProgressEstimator } from 'progress-estimator';
+import createProgressEstimator from 'progress-estimator';
 
-export const createRandomProgressEstimatorTempDir: () => Promise<string> = () =>
-  fs.mkdtemp(join(os.tmpdir(), 'progress-estimator-'));
-
-export const progressEstimatorBuilder: () => Promise<ProgressEstimator> = async () => {
-  const tempDirPath = await createRandomProgressEstimatorTempDir();
-
-  return createProgressEstimator({
-    storagePath: tempDirPath,
-    spinner: {
-      interval: 180,
-      frames: ['🌎', '🌏', '🌍'],
-    },
-  });
-};
+export const progressEstimator = createProgressEstimator({
+  storagePath: resolve(__dirname, '.progress-estimator'),
+  spinner: {
+    interval: 180,
+    frames: ['🌎', '🌏', '🌍'],
+  },
+});
 
 export const cleanDist: () => Promise<void> = () => fs.emptyDir('./dist');
 
