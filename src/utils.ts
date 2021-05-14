@@ -1,10 +1,18 @@
+import * as os from 'os';
 import * as fs from 'fs-extra';
 import { resolve } from 'path';
 import * as readline from 'readline';
+import findCacheDir from 'find-cache-dir';
 import createProgressEstimator from 'progress-estimator';
 
+export const getCacheDir = (...pathParts: string[]): string => {
+  const thunk = findCacheDir({ name: 'rollpkg', create: true, thunk: true });
+
+  return thunk ? thunk(...pathParts) : resolve(os.tmpdir(), ...pathParts);
+}
+
 export const progressEstimator = createProgressEstimator({
-  storagePath: resolve(__dirname, '.progress-estimator'),
+  storagePath: getCacheDir('progress-estimator'),
   spinner: {
     interval: 180,
     frames: ['🌎', '🌏', '🌍'],

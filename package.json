@@ -55,6 +55,7 @@
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-react": "^7.23.1",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "find-cache-dir": "^3.3.1",
     "fs-extra": "^9.1.0",
     "jest": "^26.6.3",
     "jest-watch-typeahead": "^0.6.2",
@@ -70,6 +71,7 @@
     "validate-npm-package-name": "^3.0.0"
   },
   "devDependencies": {
+    "@types/find-cache-dir": "^3.2.0",
     "@types/fs-extra": "^9.0.10",
     "@types/mock-fs": "^4.13.0",
     "@types/node": "^14.14.37",
